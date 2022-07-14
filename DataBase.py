@@ -6,6 +6,7 @@ class DataBase:
         self.conn = sqlite3.connect('sclad.db')
         self.cur = self.conn.cursor()
         # self.cur.execute('''DROP TABLE quantity''')
+        # self.cur.execute('''DROP TABLE items_name''')
         self.create_table()
 
     def create_table(self):
@@ -13,6 +14,7 @@ class DataBase:
             '''CREATE TABLE IF NOT EXISTS items_name(
            id integer primary key,
            name text NOT NULL UNIQUE, 
+           unit text DEFAULT "уп",
             UNIQUE ("name") ON CONFLICT IGNORE)''')
         self.conn.commit()
 
@@ -27,8 +29,8 @@ class DataBase:
            ''')
         self.conn.commit()
 
-    def add_items(self, item_name):
-        self.cur.execute("INSERT INTO items_name(name) VALUES(?)", (item_name,))
+    def add_items(self, item_name, unit):
+        self.cur.execute("INSERT INTO items_name(name, unit) VALUES(?,?)", (item_name, unit,))
         self.conn.commit()
 
     def add_quantity(self, id_item, quant, quant_sign, date, doc):
@@ -56,12 +58,12 @@ class DataBase:
 
 
 t = DataBase()
-# t.create_table()
+t.add_items('bpan2','уп')# t.create_table()
 # t.add_quantity(1,12,'2020-05-20', 'ТН-2016')
 # t.add_quantity(1,12,'2020-05-20', 'ТН-2016')
 # t.add_quantity(1,12,'2020-05-20', 'ТН-2016')
 # t.add_quantity(2,12,'2020-05-20', 'ТН-2016')
 # t.add_quantity(2,500, True, '2020-05-20', 'ТН-2016')
-print(t.calculate_items(3))
+# print(t.calculate_items(3))
 # t.delete_quantity(1)
 # t.delete_item(2)
