@@ -81,9 +81,13 @@ class DataBase:
             else:
                 self.add_quantity(b, i[2], True, date_today, '')
 
+    def select_quant_by_date(self, from_date, to_date):
+        return self.cur.execute(f'''SELECT * FROM quantity LEFT JOIN items_name ON quantity.item_id = items_name.id
+                                    WHERE date_of_insert BETWEEN "{from_date}" AND "{to_date}"''').fetchmany(10000)
+
 t = DataBase()
 # t.import_from_xls('wb1.xlsx', date.today())
-# t.add_quantity(8, 10, False, date.today(), 'Инфекционное')
+t.add_quantity(8, 10, False, '2022-06-14', 'Инфекционное')
 # print(t.calculate_items(8))
-print(t.show_data())
+print(t.select_quant_by_date("2022-06-14", "2022-06-14"))
 
