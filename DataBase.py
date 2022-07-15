@@ -13,26 +13,39 @@ class DataBase:
         # self.cur.execute('''DROP TABLE items_name''')
         self.create_table()
 
+    def create_group(self, name):
 
-    def create_table(self):
-        self.cur.execute(
-            '''CREATE TABLE IF NOT EXISTS items_name(
-           id integer primary key,
-           name text NOT NULL UNIQUE, 
-           unit text DEFAULT "уп",
-            UNIQUE ("name") ON CONFLICT IGNORE)''')
+        self.cur.execute("INSERT INTO groups(name) VALUES(?)", (name,))
         self.conn.commit()
-        #test
+        self.id = self.cur.lastrowid
 
         self.cur.execute(
-            '''CREATE TABLE IF NOT EXISTS quantity(
+            f'''CREATE TABLE IF NOT EXISTS items{self.id}(
+           id integer primary key,
+           name text NOT NULL UNIQUE,             
+           unit text DEFAULT "уп",
+            mnn_name text NOT NULL UNIQUE,
+            UNIQUE ("name", "mnn_name") ON CONFLICT IGNORE)''')
+        self.conn.commit()
+
+        self.cur.execute(
+            f'''CREATE TABLE IF NOT EXISTS quantity{self.id}(
            id integer primary key,
            item_id INTEGER,
            quantity REAL NOT NULL,
            date_of_insert TEXT,
            doc TEXT,
-           FOREIGN KEY (item_id) REFERENCES items_name(id))
+           FOREIGN KEY (item_id) REFERENCES items{self.id}(id))
            ''')
+        self.conn.commit()
+
+    def create_table(self):
+
+        self.cur.execute(
+            '''CREATE TABLE IF NOT EXISTS groups(
+           id integer primary key,
+           name text NOT NULL UNIQUE, 
+            UNIQUE ("name") ON CONFLICT IGNORE)''')
         self.conn.commit()
 
         self.cur.execute(
@@ -50,8 +63,15 @@ class DataBase:
         self.conn.commit()
 
 
-    def add_items(self, item_name, unit):
-        self.cur.execute("INSERT INTO items_name(name, unit) VALUES(?,?)", (item_name, unit,))
+        self.cur.execute(
+            '''CREATE TABLE IF NOT EXISTS mnn(
+           id integer primary key,
+           name text NOT NULL UNIQUE, 
+            UNIQUE ("name") ON CONFLICT IGNORE)''')
+        self.conn.commit()
+
+    def add_items(self, item_name, unit, mnn = ''):
+        self.cur.execute(f"INSERT INTO items{self.id}(name, unit) VALUES(?,?)", (item_name, unit,))
         self.cur.execute("INSERT INTO units(name) VALUES(?)", (unit,))
         self.conn.commit()
         return self.cur.lastrowid
@@ -61,43 +81,63 @@ class DataBase:
             quant *= -1
             self.cur.execute("INSERT INTO division(name) VALUES(?)", (doc,))
 
-        self.cur.execute("INSERT INTO quantity(item_id, quantity,date_of_insert,doc) VALUES(?,?,?,?)",
+        self.cur.execute(f"INSERT INTO quantity{self.id}(item_id, quantity,date_of_insert,doc) VALUES(?,?,?,?)",
                          (id_item, quant, date, doc,))
         self.conn.commit()
 
     def show_data(self):
-        return self.cur.execute('''SELECT id, name FROM items_name ORDER BY id ASC''').fetchmany(10000)
+        return self.cur.execute(f'''SELECT id, name, unit FROM items{self.id} ORDER BY id ASC''').fetchmany(10000)
 
     def delete_quantity(self, quant_id):
-        self.cur.execute(f"DELETE from quantity where id = {quant_id}")
+        self.cur.execute(f"DELETE from quantity{self.id} where id = {quant_id}")
         self.conn.commit()
 
     def delete_item(self, item_id):
-        self.cur.execute(f"DELETE from items_name where id = {item_id}")
-        self.cur.execute(f"DELETE from quantity where item_id = {item_id}")
+        self.cur.execute(f"DELETE from items{self.id} where id = {item_id}")
+        self.cur.execute(f"DELETE from quantity{self.id} where item_id = {item_id}")
         self.conn.commit()
 
     def calculate_items(self, item_id):
-        return self.cur.execute(f'''SELECT sum(quantity) FROM quantity WHERE item_id = {item_id}''').fetchone()[0]
+        return self.cur.execute(f'''SELECT sum(quantity) FROM quantity{self.id} WHERE item_id = {item_id}''').fetchone()[0]
 
     def import_from_xls(self, file_name, date_today):
         p = XlsxImport(file_name)
         data = p.import_into_list()
         for i in data:
             b = self.add_items(i[0], i[1])
-            info = self.cur.execute('SELECT * FROM items_name WHERE id=?', (b,))
+            info = self.cur.execute(f'SELECT * FROM items{self.id} WHERE id=?', (b,))
             if info.fetchone() is None:
                 return
             else:
                 self.add_quantity(b, i[2], True, date_today, '')
 
     def select_quant_by_date(self, from_date, to_date):
-        return self.cur.execute(f'''SELECT * FROM quantity LEFT JOIN items_name ON quantity.item_id = items_name.id
+        return self.cur.execute(f'''SELECT * FROM quantity{self.id} LEFT JOIN items{self.id} ON quantity{self.id}.item_id = items{self.id}.id
                                     WHERE date_of_insert BETWEEN "{from_date}" AND "{to_date}"''').fetchmany(10000)
 
+    def return_residue(self):
+        all_residue = []
+        for a in self.show_data():
+            one_residue = []
+            one_residue.append(a[1])
+            one_residue.append(a[2])
+            one_residue.append(str(self.calculate_items(a[0])).replace('.0 ', ''))
+            all_residue.append(one_residue)
+
+        return all_residue
+
+
+
 t = DataBase()
+t.id = 1
+print(t.return_residue())
+
+
+    # print()
+# t.create_group('залупа')
 # t.import_from_xls('wb1.xlsx', date.today())
-t.add_quantity(8, 10, False, '2022-06-14', 'Инфекционное')
-# print(t.calculate_items(8))
-print(t.select_quant_by_date("2022-06-14", "2022-06-14"))
+# t.add_quantity(8, 10, False, '2022-06-14', 'Инфекционное')
+# t.delete_item(9)
+# print(t.calculate_items(1))
+# print(t.select_quant_by_date("2022-06-14", "2023-06-14"))
 
