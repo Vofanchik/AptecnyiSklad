@@ -40,6 +40,15 @@ class DataBase:
             UNIQUE ("name") ON CONFLICT IGNORE)''')
         self.conn.commit()
 
+        self.cur.execute(
+            '''CREATE TABLE IF NOT EXISTS division(
+           id integer primary key,
+           name text NOT NULL UNIQUE, 
+            UNIQUE ("name") ON CONFLICT IGNORE)''')
+        self.conn.commit()
+
+
+
 
 
     def add_items(self, item_name, unit):
@@ -51,6 +60,8 @@ class DataBase:
     def add_quantity(self, id_item, quant, quant_sign, date, doc):
         if quant_sign == False:
             quant *= -1
+            self.cur.execute("INSERT INTO division(name) VALUES(?)", (doc,))
+
         self.cur.execute("INSERT INTO quantity(item_id, quantity,date_of_insert,doc) VALUES(?,?,?,?)",
                          (id_item, quant, date, doc,))
         self.conn.commit()
