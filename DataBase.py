@@ -13,6 +13,7 @@ class DataBase:
         # self.cur.execute('''DROP TABLE items_name''')
         self.create_table()
 
+
     def create_table(self):
         self.cur.execute(
             '''CREATE TABLE IF NOT EXISTS items_name(
@@ -21,6 +22,7 @@ class DataBase:
            unit text DEFAULT "уп",
             UNIQUE ("name") ON CONFLICT IGNORE)''')
         self.conn.commit()
+        #test
 
         self.cur.execute(
             '''CREATE TABLE IF NOT EXISTS quantity(
@@ -46,9 +48,6 @@ class DataBase:
            name text NOT NULL UNIQUE, 
             UNIQUE ("name") ON CONFLICT IGNORE)''')
         self.conn.commit()
-
-
-
 
 
     def add_items(self, item_name, unit):
