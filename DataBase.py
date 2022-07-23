@@ -24,8 +24,8 @@ class DataBase:
            id integer primary key,
            name text NOT NULL UNIQUE,             
            unit text DEFAULT "уп",
-            mnn_name text NOT NULL UNIQUE,
-            UNIQUE ("name", "mnn_name") ON CONFLICT IGNORE)''')
+            mnn_name text NOT NULL default "",
+            UNIQUE ("name") ON CONFLICT IGNORE)''')
         self.conn.commit()
 
         self.cur.execute(
@@ -71,7 +71,7 @@ class DataBase:
         self.conn.commit()
 
     def add_items(self, item_name, unit, mnn = ''):
-        self.cur.execute(f"INSERT INTO items{self.id}(name, unit) VALUES(?,?)", (item_name, unit,))
+        self.cur.execute(f"INSERT INTO items{self.id}(name, unit, mnn_name) VALUES(?,?,?)", (item_name, unit, mnn,))
         self.cur.execute("INSERT INTO units(name) VALUES(?)", (unit,))
         self.conn.commit()
         return self.cur.lastrowid
@@ -128,12 +128,12 @@ class DataBase:
 
 
 
-t = DataBase()
-t.id = 1
-print(t.return_residue())
+# t = DataBase()
+# t.id = 1
+# print(t.return_residue())
 
 
-    # print()
+# print()
 # t.create_group('залупа')
 # t.import_from_xls('wb1.xlsx', date.today())
 # t.add_quantity(8, 10, False, '2022-06-14', 'Инфекционное')
