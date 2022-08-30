@@ -8,16 +8,15 @@ class DataBase:
     def __init__(self):
         self.conn = sqlite3.connect('sclad.db')
         self.cur = self.conn.cursor()
-        # self.cur.execute('''DROP TABLE quantity''')
-        # self.cur.execute('''DROP TABLE items_name''')
         self.create_table()
 
     def create_group(self, name):                                           # создаесм переменные таблицы
 
         self.cur.execute("INSERT INTO groups(name) VALUES(?)", (name,))  # создаём группу товаров
         self.conn.commit()
-        self.id = self.cur.lastrowid                                    # присваиваем id последней созданной группы
 
+        self.id = self.cur.lastrowid                                    # присваиваем id последней созданной группы
+        print(self.id)
         self.cur.execute(                                                   # создаем таблицу с названием items_id для каждой группы
             f'''CREATE TABLE IF NOT EXISTS items{self.id}(
            id integer primary key,
