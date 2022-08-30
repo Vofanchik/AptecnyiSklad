@@ -31,6 +31,7 @@ class Ui_Form(object):
         self.pushButton_3.setObjectName("pushButton_3")
         self.gridLayout.addWidget(self.pushButton_3, 1, 2, 1, 1)
         self.tableWidget = QtWidgets.QTableWidget(self.gridLayoutWidget)
+        self.tableWidget.setMaximumSize(QtCore.QSize(439, 16777215))
         self.tableWidget.setObjectName("tableWidget")
         self.tableWidget.setColumnCount(2)
         self.tableWidget.setRowCount(0)
@@ -38,8 +39,9 @@ class Ui_Form(object):
         self.tableWidget.setHorizontalHeaderItem(0, item)
         item = QtWidgets.QTableWidgetItem()
         self.tableWidget.setHorizontalHeaderItem(1, item)
-        self.tableWidget.horizontalHeader().setDefaultSectionSize(32)
+        self.tableWidget.horizontalHeader().setDefaultSectionSize(39)
         self.tableWidget.horizontalHeader().setStretchLastSection(True)
+        self.tableWidget.verticalHeader().setVisible(False)
         self.tableWidget.verticalHeader().setCascadingSectionResizes(False)
         self.gridLayout.addWidget(self.tableWidget, 0, 0, 1, 3)
 
@@ -48,7 +50,7 @@ class Ui_Form(object):
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
-        Form.setWindowTitle(_translate("Form", "Form"))
+        Form.setWindowTitle(_translate("Form", "Группы материальных ценностей"))
         self.pushButton_2.setText(_translate("Form", "Добавить группу"))
         self.pushButton.setText(_translate("Form", "Выбрать группу"))
         self.pushButton_3.setText(_translate("Form", "Удалить группу"))
