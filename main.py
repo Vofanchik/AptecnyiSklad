@@ -3,6 +3,7 @@ from datetime import date
 
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
+from PyQt5.QtCore import QTimer
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QHBoxLayout, QAction, QDialog, QTableWidgetItem, QInputDialog, QMessageBox, \
     QFileDialog, QVBoxLayout, QWidget, QPushButton, QLabel, QCompleter
@@ -47,7 +48,8 @@ class SelectGroupDlg(QDialog):                                              # к
             return
 
     def checkout_group(self):
-        db.id = self.ui.tableWidget.item(self.ui.tableWidget.currentRow(), 0).text()
+        db.id = int(self.ui.tableWidget.item(self.ui.tableWidget.currentRow(), 0).text())
+        ex.ui.label.setText(list(filter(lambda x: x[0] == db.id, db.show_data_of_groups()))[0][1])
         self.hide()
         ex.completer_items()
 
@@ -60,8 +62,6 @@ class SelectGroupDlg(QDialog):                                              # к
         else:
             return False
 
-
-
 class mywindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(mywindow, self).__init__()
@@ -69,6 +69,8 @@ class mywindow(QtWidgets.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.completer_items()
+        self.ui.label.setText(list(filter(lambda x: x[0] == db.id, db.show_data_of_groups()))[0][1])
+
 
         def add_menu():
             layout = QHBoxLayout()
@@ -101,7 +103,12 @@ class mywindow(QtWidgets.QMainWindow):
         completer = QCompleter(strList, self.ui.lineEdit)
         completer.setCaseSensitivity(False)
         completer.setFilterMode(QtCore.Qt.MatchContains)
+        completer.activated.connect(self.onActivated_competer)
         self.ui.lineEdit.setCompleter(completer)
+
+    def onActivated_competer(self):
+        QTimer.singleShot(0, self.ui.lineEdit.clear)
+
 
 
 app = QApplication(sys.argv)

@@ -89,7 +89,10 @@ class DataBase:
         self.conn.commit()
 
     def show_data(self):                                        # возвращаем 10000  записей товара
-        return self.cur.execute(f'''SELECT id, name, unit FROM items{self.id} ORDER BY id ASC''').fetchmany(10000)
+        try:
+            return self.cur.execute(f'''SELECT id, name, unit FROM items{self.id} ORDER BY id ASC''').fetchmany(10000)
+        except:
+            return []
 
     def delete_quantity(self, quant_id):                        # удаляем проиход/расход
         self.cur.execute(f"DELETE from quantity{self.id} where id = {quant_id}")
