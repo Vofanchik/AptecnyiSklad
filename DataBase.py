@@ -122,6 +122,11 @@ class DataBase:
         return self.cur.execute(
             f'''SELECT * FROM quantity{self.id} LEFT JOIN items{self.id} ON quantity{self.id}.item_id = items{self.id}.id
                                     WHERE date_of_insert BETWEEN "{from_date}" AND "{to_date}"''').fetchmany(10000)
+    def show_quantyty_by_id_date(self, id_item, from_date, to_date):
+        return self.cur.execute(
+            f'''SELECT * FROM quantity{self.id} 
+                WHERE date_of_insert BETWEEN "{from_date}" AND "{to_date}"
+                AND item_id = {id_item}''').fetchmany(10000)
 
     def return_residue(self):  # считает остатки по всем позициям
         all_residue = []
@@ -137,16 +142,22 @@ class DataBase:
     def show_data_of_groups(self):                                        # возвращаем 10000  записей товара
         return self.cur.execute(f'''SELECT id, name FROM groups ORDER BY id ASC''').fetchmany(10000)
 
-# t = DataBase()
+    def get_id_from_items(self, item_name):
+        return self.cur.execute(
+            f'''SELECT id FROM items{self.id} 
+                        WHERE name = "{item_name}"''').fetchone()
+
+t = DataBase()
 # t.delete_group(6)
-# t.id = 1
+t.id = 1
 # print(t.show_data_of_groups())
 
 
 # print()
 # t.create_group('пенис')
 # t.import_from_xls('wb1.xlsx', date.today())
-# t.add_quantity(8, 10, False, '2022-06-14', 'Инфекционное')
+# t.add_quantity(1, 10, False, '2022-06-14', 'Инфекционное')
 # t.delete_item(9)
 # print(t.calculate_items(1))
-# print(t.select_quant_by_date("2022-06-14", "2023-06-14"))
+# print(t.select_quant_by_date("2022-06-14", "2023-08-31"))
+# print(t.show_quantyty_by_id_date(1,"2022-06-14", "2023-08-31"))
