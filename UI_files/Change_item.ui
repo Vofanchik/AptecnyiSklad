@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>480</width>
-    <height>224</height>
+    <width>533</width>
+    <height>329</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,8 +18,8 @@
     <rect>
      <x>10</x>
      <y>20</y>
-     <width>461</width>
-     <height>167</height>
+     <width>515</width>
+     <height>208</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout">
@@ -82,8 +82,8 @@
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
     <rect>
-     <x>160</x>
-     <y>190</y>
+     <x>200</x>
+     <y>270</y>
      <width>161</width>
      <height>23</height>
     </rect>

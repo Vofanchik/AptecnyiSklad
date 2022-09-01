@@ -73,9 +73,11 @@ class DataBase:
             UNIQUE ("name") ON CONFLICT IGNORE)''')
         self.conn.commit()
 
+
     def add_items(self, item_name, unit, mnn=''):  # создаем товар
         self.cur.execute(f"INSERT INTO items{self.id}(name, unit, mnn_name) VALUES(?,?,?)", (item_name, unit, mnn,))
         self.cur.execute("INSERT INTO units(name) VALUES(?)", (unit,))
+        self.cur.execute("INSERT INTO mnn(name) VALUES(?)", (mnn,))
         self.conn.commit()
         return self.cur.lastrowid
 
@@ -87,6 +89,19 @@ class DataBase:
         self.cur.execute(f"INSERT INTO quantity{self.id}(item_id, quantity,date_of_insert,doc) VALUES(?,?,?,?)",
                          (id_item, quant, date, doc,))
         self.conn.commit()
+
+    def show_package(self):  # возвращаем Упаковки
+        try:
+            return self.cur.execute(f'''SELECT name FROM units''').fetchmany(10000)
+        except:
+            return []
+
+    def show_mnn(self):  # возвращаем Упаковки
+        try:
+            return self.cur.execute(f'''SELECT name FROM mnn''').fetchmany(1000000)
+        except:
+            return []
+
 
     def show_data(self):  # возвращаем 10000  записей товара
         try:

@@ -5,21 +5,45 @@ from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QTimer, QDate
 from PyQt5.QtWidgets import QApplication, QHBoxLayout, QAction, QDialog, QTableWidgetItem, QInputDialog, QMessageBox, \
-    QFileDialog,  QWidget,  QCompleter
+    QFileDialog, QCompleter
 
 from DataBase import DataBase
 from UI_files.maiwindo import Ui_MainWindow
 from UI_files.group_select import Ui_Form
+from UI_files.Change_item import Ui_AddItemDialog
 
 
-class InputDialogItem(QWidget):
-    pass
+class InputDialogItem(QDialog):                                             # класс диалога с созданием нового товара
+    def __init__(self, **kwargs):                                      # def __init__(self, parent=None):
+        super().__init__(**kwargs)
+        self.ui = Ui_AddItemDialog()
+        self.ui.setupUi(self)
+        self.strList = [i[0] for i in db.show_package()]
+
+        completer = QCompleter(self.strList, self.ui.lineEdit_2)
+        completer.setCaseSensitivity(False)
+        completer.setFilterMode(QtCore.Qt.MatchContains)
+        # completer.activated.connect(self.onActivated_competer)
+        self.ui.lineEdit_2.setCompleter(completer)
+
+        self.strList2 = [i[0] for i in db.show_mnn()]
+        completer2 = QCompleter(self.strList2, self.ui.lineEdit_3)
+        completer2.setCaseSensitivity(False)
+        completer2.setFilterMode(QtCore.Qt.MatchContains)
+        # completer.activated.connect(self.onActivated_competer)
+        self.ui.lineEdit_3.setCompleter(completer2)
+
+        self.ui.buttonBox.accepted.connect(self.accept_clicked)
+
+    def accept_clicked(self):
+        db.add_items(self.ui.lineEdit.text(), self.ui.lineEdit_2.text(), self.ui.lineEdit_3.text())
+        ex.completer_items()
+        self.hide()
 
 
 class SelectGroupDlg(QDialog):                                              # класс диалога с группами
     def __init__(self, root, **kwargs): # def __init__(self, parent=None):
         super().__init__(root, **kwargs) #     super().__init__(parent)
-        self.root = root
         self.ui = Ui_Form()
         self.ui.setupUi(self)
         self.fill_dialog(db.show_data_of_groups())
@@ -102,10 +126,8 @@ class mywindow(QtWidgets.QMainWindow):
         add_menu()
 
     def add_item(self):
-        dlg = QDialog()
-        dlg.resize(480, 224)
-
-
+        idi.ui.lineEdit.setText(self.ui.lineEdit.text())
+        idi.show()
 
     def if_date_changed(self):
         try:
@@ -121,16 +143,14 @@ class mywindow(QtWidgets.QMainWindow):
                                                 '', "Xlsx files (*.xls *.xlsx)")
             db.import_from_xls(fname[0], date.today())
 
-
     def completer_items(self):
-        strList = [i[1] for i in db.show_data()] # Создаём список слов
+        self.strList = [i[1] for i in db.show_data()] # Создаём список слов
         # Создаём QCompleter, в который устанавливаем список, а также указатель на родителя
-        completer = QCompleter(strList, self.ui.lineEdit)
+        completer = QCompleter(self.strList, self.ui.lineEdit)
         completer.setCaseSensitivity(False)
         completer.setFilterMode(QtCore.Qt.MatchContains)
         completer.activated.connect(self.onActivated_competer)
         self.ui.lineEdit.setCompleter(completer)
-
 
     def get_item_quantyties(self):
         id = db.get_id_from_items(self.chosen_item)[0]
@@ -167,5 +187,6 @@ db.id = 1
 ex = mywindow()
 ex.chosen_item = 'Наименование'
 sgd = SelectGroupDlg(root=ex)
+idi = InputDialogItem()
 ex.show()
 sys.exit(app.exec_())
