@@ -11,15 +11,61 @@ from DataBase import DataBase
 from UI_files.maiwindo import Ui_MainWindow
 from UI_files.group_select import Ui_Form
 from UI_files.Change_item import Ui_AddItemDialog
+from UI_files.oper_dialog import Ui_OperationDialog
+
+class InputOperationDialogItem(QDialog):                                             # класс диалога с созданием нового товара
+    def __init__(self,  **kwargs):                                      # def __init__(self, parent=None):
+        super().__init__(**kwargs)
+        self.ui = Ui_OperationDialog()
+        self.ui.setupUi(self)
+        self.ui.buttonBox.accepted.connect(self.accept_clicked)
+        self.ui.dateEdit.setDisplayFormat("yyyy-MM-dd")
+        self.ui.dateEdit.setDate(QDate.currentDate())
+        self.set_comleter()
+
+
+    def set_comleter(self):
+        self.strList = [i[0] for i in db.show_division()]
+        completer = QCompleter(self.strList, self.ui.lineEdit)
+        completer.setCaseSensitivity(False)
+        completer.setFilterMode(QtCore.Qt.MatchContains)
+        # completer.activated.connect(self.onActivated_competer)
+        self.ui.lineEdit.setCompleter(completer)
+
+
+
+    def accept_clicked(self):
+        if self.ui.comboBox.currentIndex() == 0:
+            oper = True
+        else:
+            oper = False
+
+        quant = self.ui.doubleSpinBox.value()
+        date = self.ui.dateEdit.text()
+        who = self.ui.lineEdit.text()
+        self.set_comleter()
+        try:
+            ex.fill_table_operations(ex.get_item_quantyties())
+        except:
+            pass
+        db.add_quantity(db.get_id_from_items(ex.ui.label_2.text())[0], quant, oper, date, who)
+
+        self.hide()
 
 
 class InputDialogItem(QDialog):                                             # класс диалога с созданием нового товара
-    def __init__(self, **kwargs):                                      # def __init__(self, parent=None):
+    def __init__(self, change_item=False, **kwargs):                                      # def __init__(self, parent=None):
         super().__init__(**kwargs)
         self.ui = Ui_AddItemDialog()
         self.ui.setupUi(self)
-        self.strList = [i[0] for i in db.show_package()]
+        # if change_item == False:
+        #     self.compl_iniit()
+        # else:
+        #     pass
 
+
+    def compl_iniit(self):
+        self.strList = [i[0] for i in db.show_package()]
         completer = QCompleter(self.strList, self.ui.lineEdit_2)
         completer.setCaseSensitivity(False)
         completer.setFilterMode(QtCore.Qt.MatchContains)
@@ -38,7 +84,27 @@ class InputDialogItem(QDialog):                                             # к
     def accept_clicked(self):
         db.add_items(self.ui.lineEdit.text(), self.ui.lineEdit_2.text(), self.ui.lineEdit_3.text())
         ex.completer_items()
+        self.compl_iniit()
         self.hide()
+
+    def accept_clicked_2(self):
+        id = db.get_id_from_items(ex.ui.label_2.text())[0]
+        db.change_item(self.ui.lineEdit.text(), self.ui.lineEdit_2.text(), self.ui.lineEdit_3.text(), id)
+        ex.chosen_item = self.ui.lineEdit.text()
+        ex.ui.label_2.setText(ex.chosen_item)
+        ex.ui.label_3.setText(db.show_item_by_id(db.get_id_from_items(ex.chosen_item)[0])[1])
+        ex.completer_items()
+        self.hide()
+
+
+    def change_item(self):
+        id_it = db.get_id_from_items(ex.ui.label_2.text())
+        ls = db.show_item_by_id(id_it[0])
+        self.ui.lineEdit.setText(ls[0])
+        self.ui.lineEdit_2.setText(ls[1])
+        self.ui.lineEdit_3.setText(ls[2])
+        self.ui.buttonBox.accepted.connect(self.accept_clicked_2)
+
 
 
 class SelectGroupDlg(QDialog):                                              # класс диалога с группами
@@ -108,6 +174,8 @@ class mywindow(QtWidgets.QMainWindow):
         self.ui.dateEdit_2.dateChanged.connect(lambda: self.if_date_changed())
 
         self.ui.pushButton_5.clicked.connect(self.add_item)
+        self.ui.pushButton.clicked.connect(self.change_item)
+        self.ui.pushButton_3.clicked.connect(self.add_operation)
 
 
 
@@ -124,6 +192,14 @@ class mywindow(QtWidgets.QMainWindow):
             self.setLayout(layout)
 
         add_menu()
+
+    def add_operation(self):
+        iodi.ui.label.setText(self.ui.label_2.text())
+        iodi.show()
+
+    def change_item(self):
+        idi_change.change_item()
+        idi_change.show()
 
     def add_item(self):
         idi.ui.lineEdit.setText(self.ui.lineEdit.text())
@@ -160,7 +236,9 @@ class mywindow(QtWidgets.QMainWindow):
         self.chosen_item = self.ui.lineEdit.text()
 
         self.ui.label_2.setText(self.chosen_item)
-        self.fill_table_operations(self.get_item_quantyties())
+        self.ui.label_3.setText(db.show_item_by_id(db.get_id_from_items(ex.chosen_item)[0])[1]) # вставляет остаток товара
+        self.fill_table_operations(self.get_item_quantyties())                                  # заполняет таблицу операциями
+        self.ui.label_5.setText(str(db.calculate_items(db.get_id_from_items(self.chosen_item)[0])))
         QTimer.singleShot(0, self.ui.lineEdit.clear)
 
     def fill_table_operations(self, lst):                                                     # заполняет виджет таблицы группами из бд
@@ -188,5 +266,7 @@ ex = mywindow()
 ex.chosen_item = 'Наименование'
 sgd = SelectGroupDlg(root=ex)
 idi = InputDialogItem()
+idi_change = InputDialogItem(True)
+iodi = InputOperationDialogItem()
 ex.show()
 sys.exit(app.exec_())

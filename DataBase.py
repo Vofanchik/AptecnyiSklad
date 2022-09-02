@@ -10,6 +10,15 @@ class DataBase:
         self.cur = self.conn.cursor()
         self.create_table()
 
+    def show_item_by_id(self, id_item):
+        return self.cur.execute(
+            f'''SELECT name, unit, mnn_name FROM items{self.id}
+             WHERE id = {id_item}''').fetchone()
+
+    def change_item(self, name, package, mnn, id):
+        self.cur.execute(f"UPDATE items{self.id} SET name = '{name}', unit = '{package}', mnn_name = '{mnn}' WHERE id = '{id}'")
+        self.conn.commit()
+
     def create_group(self, name):  # создаесм переменные таблицы
 
         self.cur.execute("INSERT INTO groups(name) VALUES(?)", (name,))  # создаём группу товаров
@@ -96,7 +105,14 @@ class DataBase:
         except:
             return []
 
-    def show_mnn(self):  # возвращаем Упаковки
+    def show_division(self):  # возвращаем отделения
+        try:
+            return self.cur.execute(f'''SELECT name FROM division''').fetchmany(10000)
+        except:
+            return []
+
+
+    def show_mnn(self):  # возвращаем мнн
         try:
             return self.cur.execute(f'''SELECT name FROM mnn''').fetchmany(1000000)
         except:
@@ -161,12 +177,12 @@ class DataBase:
                         WHERE name = "{item_name}"''').fetchone()
 
 
-t = DataBase()
+# t = DataBase()
 # t.delete_group(6)
-t.id = 1
-# print(t.show_data_of_groups())
-
-
+# t.id = 1
+# print(t.show_data_of_groups(32))
+# t.change_item(1, 'лох', "пидр",'чмо')
+# print(t.show_item_by_id(32))
 # print()
 # t.create_group('пенис')
 # t.import_from_xls('wb1.xlsx', date.today())
