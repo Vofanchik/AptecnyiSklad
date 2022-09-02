@@ -23,6 +23,10 @@ class InputOperationDialogItem(QDialog):                                        
         self.ui.dateEdit.setDate(QDate.currentDate())
         self.set_comleter()
 
+    def get_item_quantyties(self):
+        id = db.get_id_from_items(ex.chosen_item)[0]
+        return db.show_quantyty_by_id_date(id, ex.ui.dateEdit.text(), ex.ui.dateEdit_2.text())
+
 
     def set_comleter(self):
         self.strList = [i[0] for i in db.show_division()]
@@ -44,11 +48,14 @@ class InputOperationDialogItem(QDialog):                                        
         date = self.ui.dateEdit.text()
         who = self.ui.lineEdit.text()
         self.set_comleter()
+
+        db.add_quantity(db.get_id_from_items(ex.ui.label_2.text())[0], quant, oper, date, who)
         try:
             ex.fill_table_operations(ex.get_item_quantyties())
         except:
             pass
-        db.add_quantity(db.get_id_from_items(ex.ui.label_2.text())[0], quant, oper, date, who)
+
+        ex.ui.label_5.setText(str(db.calculate_items(db.get_id_from_items(ex.chosen_item)[0])))
 
         self.hide()
 
