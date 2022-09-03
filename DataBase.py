@@ -1,5 +1,6 @@
 import sqlite3
 from datetime import date
+from pprint import pprint
 
 from XlsxImport import XlsxImport
 
@@ -123,7 +124,7 @@ class DataBase:
 
     def show_data(self):  # возвращаем 10000  записей товара
         try:
-            return self.cur.execute(f'''SELECT id, name, unit FROM items{self.id} ORDER BY id ASC''').fetchmany(10000)
+            return self.cur.execute(f'''SELECT id, name, unit, mnn_name FROM items{self.id} ORDER BY id ASC''').fetchmany(10000)
         except:
             return []
 
@@ -166,7 +167,7 @@ class DataBase:
     def return_residue(self):  # считает остатки по всем позициям
         all_residue = []
         for a in self.show_data():
-            one_residue = [a[1], a[2], str(self.calculate_items(a[0])).replace('.0 ', '')]
+            one_residue = [a[1], a[2], a[3], str(self.calculate_items(a[0]))]
             all_residue.append(one_residue)
 
         return all_residue
@@ -183,6 +184,7 @@ class DataBase:
 # t = DataBase()
 # t.delete_group(6)
 # t.id = 2
+# pprint(t.return_residue())
 # t.add_items('Афобазол', "упаковка", "афик")
 # print(t.show_data_of_groups(32))
 # t.change_item(1, 'лох', "пидр",'чмо')

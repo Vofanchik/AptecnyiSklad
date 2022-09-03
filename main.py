@@ -1,5 +1,8 @@
+# -*- coding: utf-8 -*-
 import sys
 from datetime import date
+
+from pprint import pprint
 
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
@@ -12,6 +15,7 @@ from UI_files.maiwindo import Ui_MainWindow
 from UI_files.group_select import Ui_Form
 from UI_files.Change_item import Ui_AddItemDialog
 from UI_files.oper_dialog import Ui_OperationDialog
+from UI_files.residue_dialog import Ui_DialogResidue
 
 
 class InputOperationDialogItem(QDialog):  # класс диалога с созданием нового товара
@@ -57,7 +61,6 @@ class InputOperationDialogItem(QDialog):  # класс диалога с соз�
         ex.ui.label_5.setText(str(db.calculate_items(db.get_id_from_items(ex.chosen_item)[0])))
 
         self.hide()
-
 
 class InputDialogItem(QDialog):  # класс диалога с созданием нового товара
     def __init__(self, change_item=False, **kwargs):  # def __init__(self, parent=None):
@@ -114,6 +117,39 @@ class InputDialogItem(QDialog):  # класс диалога с создание
         self.ui.lineEdit_3.setText(ls[2])
         self.ui.buttonBox.accepted.connect(self.accept_clicked_2)
 
+class ResidueDialog(QDialog):  # класс диалога с остатками
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.ui = Ui_DialogResidue()
+        self.ui.setupUi(self)
+        self.ui.buttonBox.accepted.connect(self.on_ok_clicked)
+        # self.ui.tableWidget.setColumnHidden(0, True)  # Скрывает поле id из таблицы
+
+
+    def fill_residue_table(self):
+        lst = list(filter(lambda x : x[3] != '0.0' and x[3] != 'None', db.return_residue()))
+        if not lst:
+            self.ui.tableWidget.setRowCount(0)
+        else:
+            for co, it in enumerate(lst):
+                self.ui.tableWidget.setRowCount(co + 1)
+                self.ui.tableWidget.setItem(co, 0, QTableWidgetItem(f"{it[0]}"))
+                self.ui.tableWidget.setItem(co, 1, QTableWidgetItem(f"{it[1]}"))
+                self.ui.tableWidget.setItem(co, 2, QTableWidgetItem(f"{it[3]}"))
+                self.ui.tableWidget.setItem(co, 3, QTableWidgetItem(f"{it[2]}"))
+
+    def on_ok_clicked(self):
+        ex.chosen_item = self.ui.tableWidget.item(self.ui.tableWidget.currentRow(), 0).text()
+        # db.get_id_from_items(ex.chosen_item)[0])[1]
+        ex.ui.label_2.setText(ex.chosen_item)
+        ex.ui.label_3.setText(
+            db.show_item_by_id(db.get_id_from_items(ex.chosen_item)[0])[1])  # вставляет еденицу измерения товара
+        ex.ui.label_5.setText(str(db.calculate_items(db.get_id_from_items(ex.chosen_item)[0])))
+        ex.fill_table_operations(ex.get_item_quantyties())  # заполняет таблицу операциями
+        ex.ui.pushButton.setEnabled(True)
+        ex.ui.pushButton_2.setEnabled(True)
+        ex.ui.pushButton_3.setEnabled(True)
+        rd.hide()
 
 class SelectGroupDlg(QDialog):  # класс диалога с группами
     def __init__(self, root, **kwargs):  # def __init__(self, parent=None):
@@ -159,6 +195,8 @@ class SelectGroupDlg(QDialog):  # класс диалога с группами
             ui = ex.ui
             buttons = [ui.pushButton, ui.pushButton_2, ui.pushButton_3]  # выключаем кнопки
             [i.setEnabled(False) for i in buttons]
+            ex.ui.pushButton_4.setEnabled(True)
+            ex.ui.pushButton_5.setEnabled(True)
             self.hide()
             ex.completer_items()
         except:
@@ -173,12 +211,6 @@ class SelectGroupDlg(QDialog):  # класс диалога с группами
             return True
         else:
             return False
-
-
-def change_item():
-    idi_change.change_item()
-    idi_change.show()
-
 
 class mywindow(QtWidgets.QMainWindow):
     def __init__(self):
@@ -200,9 +232,10 @@ class mywindow(QtWidgets.QMainWindow):
         self.ui.dateEdit_2.dateChanged.connect(lambda: self.if_date_changed())
 
         self.ui.pushButton_5.clicked.connect(self.add_item)
-        self.ui.pushButton.clicked.connect(change_item)
+        self.ui.pushButton.clicked.connect(self.change_item)
         self.ui.pushButton_3.clicked.connect(self.add_operation)
         self.ui.pushButton_2.clicked.connect(self.delete_quantity_row)
+        self.ui.pushButton_4.clicked.connect(self.open_residue_dialog)
 
         self.ui.tableWidget_2.setColumnHidden(4, True)  # Скрывает поле id из таблицы
 
@@ -233,6 +266,10 @@ class mywindow(QtWidgets.QMainWindow):
         idi_change.change_item()
         idi_change.show()
 
+    def open_residue_dialog(self):
+        rd.fill_residue_table()
+        rd.show()
+
     def add_item(self):
         idi.ui.lineEdit.setText(self.ui.lineEdit.text())
         idi.show()
@@ -249,7 +286,10 @@ class mywindow(QtWidgets.QMainWindow):
         elif press.text() == "Импортировать товары из .xlsx файла":
             fname = QFileDialog.getOpenFileName(self, 'Open file',
                                                 '', "Xlsx files (*.xls *.xlsx)")
-            db.import_from_xls(fname[0], date.today())
+            try:
+                db.import_from_xls(fname[0], date.today())
+            except:
+                pass
 
     def completer_items(self):
         self.strList = [i[1] for i in db.show_data()]  # Создаём список слов
@@ -306,5 +346,6 @@ sgd = SelectGroupDlg(root=ex)
 idi = InputDialogItem()
 idi_change = InputDialogItem(True)
 iodi = InputOperationDialogItem()
+rd = ResidueDialog()
 ex.show()
 sys.exit(app.exec_())
