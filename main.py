@@ -291,7 +291,7 @@ class mywindow(QtWidgets.QMainWindow):
 
 app = QApplication(sys.argv)
 db = DataBase()
-db.id = 1
+db.id = None
 ex = mywindow()
 ex.chosen_item = 'Наименование'
 sgd = SelectGroupDlg(root=ex)

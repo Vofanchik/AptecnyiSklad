@@ -85,9 +85,10 @@ class DataBase:
 
 
     def add_items(self, item_name, unit, mnn=''):  # создаем товар
-        self.cur.execute(f"INSERT INTO items{self.id}(name, unit, mnn_name) VALUES(?,?,?)", (item_name, unit, mnn,))
+
         self.cur.execute("INSERT INTO units(name) VALUES(?)", (unit,))
         self.cur.execute("INSERT INTO mnn(name) VALUES(?)", (mnn,))
+        self.cur.execute(f"INSERT INTO items{self.id}(name, unit, mnn_name) VALUES(?,?,?)", (item_name, unit, mnn,))
         self.conn.commit()
         return self.cur.lastrowid
 
@@ -142,6 +143,7 @@ class DataBase:
     def import_from_xls(self, file_name, date_today):  # импортируем из экселя
         p = XlsxImport(file_name)
         data = p.import_into_list()
+        del p
         for i in data:
             b = self.add_items(i[0], i[1])
             info = self.cur.execute(f'SELECT * FROM items{self.id} WHERE id=?', (b,))
@@ -178,16 +180,16 @@ class DataBase:
                         WHERE name = "{item_name}"''').fetchone()
 
 
-t = DataBase()
+# t = DataBase()
 # t.delete_group(6)
-t.id = 2
+# t.id = 2
 # t.add_items('Афобазол', "упаковка", "афик")
 # print(t.show_data_of_groups(32))
 # t.change_item(1, 'лох', "пидр",'чмо')
 # print(t.show_item_by_id(32))
 # print()
 # t.create_group('пенис')
-t.import_from_xls('wb1.xlsx', date.today())
+# t.import_from_xls('wb1.xlsx', date.today())
 # t.add_quantity(1, 10, False, '2022-06-14', 'Инфекционное')
 # t.delete_item(9)
 # print(t.calculate_items(1))
