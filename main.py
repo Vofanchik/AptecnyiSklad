@@ -13,9 +13,11 @@ from UI_files.group_select import Ui_Form
 from UI_files.Change_item import Ui_AddItemDialog
 from UI_files.oper_dialog import Ui_OperationDialog
 
-class InputOperationDialogItem(QDialog):                                             # класс диалога с созданием нового товара
-    def __init__(self,  **kwargs):                                      # def __init__(self, parent=None):
+
+class InputOperationDialogItem(QDialog):  # класс диалога с созданием нового товара
+    def __init__(self, **kwargs):  # def __init__(self, parent=None):
         super().__init__(**kwargs)
+        self.strList = None
         self.ui = Ui_OperationDialog()
         self.ui.setupUi(self)
         self.ui.buttonBox.accepted.connect(self.accept_clicked)
@@ -27,7 +29,6 @@ class InputOperationDialogItem(QDialog):                                        
         id = db.get_id_from_items(ex.chosen_item)[0]
         return db.show_quantyty_by_id_date(id, ex.ui.dateEdit.text(), ex.ui.dateEdit_2.text())
 
-
     def set_comleter(self):
         self.strList = [i[0] for i in db.show_division()]
         completer = QCompleter(self.strList, self.ui.lineEdit)
@@ -35,8 +36,6 @@ class InputOperationDialogItem(QDialog):                                        
         completer.setFilterMode(QtCore.Qt.MatchContains)
         # completer.activated.connect(self.onActivated_competer)
         self.ui.lineEdit.setCompleter(completer)
-
-
 
     def accept_clicked(self):
         if self.ui.comboBox.currentIndex() == 0:
@@ -60,16 +59,15 @@ class InputOperationDialogItem(QDialog):                                        
         self.hide()
 
 
-class InputDialogItem(QDialog):                                             # класс диалога с созданием нового товара
-    def __init__(self, change_item=False, **kwargs):                                      # def __init__(self, parent=None):
+class InputDialogItem(QDialog):  # класс диалога с созданием нового товара
+    def __init__(self, change_item=False, **kwargs):  # def __init__(self, parent=None):
         super().__init__(**kwargs)
         self.ui = Ui_AddItemDialog()
         self.ui.setupUi(self)
-        if change_item == False:
+        if not change_item:
             self.compl_iniit()
         else:
             pass
-
 
     def compl_iniit(self):
         self.strList = [i[0] for i in db.show_package()]
@@ -92,6 +90,11 @@ class InputDialogItem(QDialog):                                             # к
         db.add_items(self.ui.lineEdit.text(), self.ui.lineEdit_2.text(), self.ui.lineEdit_3.text())
         ex.completer_items()
         self.compl_iniit()
+        ex.chosen_item = self.ui.lineEdit.text()
+        ex.ui.label_2.setText(ex.chosen_item)
+        ui = ex.ui
+        buttons = [ui.pushButton, ui.pushButton_2, ui.pushButton_3]  # включаем кнопки
+        [i.setEnabled(True) for i in buttons]
         self.hide()
 
     def accept_clicked_2(self):
@@ -103,7 +106,6 @@ class InputDialogItem(QDialog):                                             # к
         ex.completer_items()
         self.hide()
 
-
     def change_item(self):
         id_it = db.get_id_from_items(ex.ui.label_2.text())
         ls = db.show_item_by_id(id_it[0])
@@ -113,21 +115,18 @@ class InputDialogItem(QDialog):                                             # к
         self.ui.buttonBox.accepted.connect(self.accept_clicked_2)
 
 
-
-class SelectGroupDlg(QDialog):                                              # класс диалога с группами
-    def __init__(self, root, **kwargs): # def __init__(self, parent=None):
-        super().__init__(root, **kwargs) #     super().__init__(parent)
+class SelectGroupDlg(QDialog):  # класс диалога с группами
+    def __init__(self, root, **kwargs):  # def __init__(self, parent=None):
+        super().__init__(root, **kwargs)  # super().__init__(parent)
         self.ui = Ui_Form()
         self.ui.setupUi(self)
         self.fill_dialog(db.show_data_of_groups())
         self.ui.pushButton.clicked.connect(self.checkout_group)
         self.ui.pushButton_2.clicked.connect(self.create_new_group)
         self.ui.pushButton_3.clicked.connect(self.delete_group)
+        self.ui.tableWidget.setColumnHidden(0, True)  # Скрывает поле id из таблицы
 
-
-
-
-    def fill_dialog(self, lst):                                               # заполняет виджет таблицы группами из бд
+    def fill_dialog(self, lst):  # заполняет виджет таблицы группами из бд
         if lst == []:
             self.ui.tableWidget.setRowCount(0)
         else:
@@ -136,13 +135,13 @@ class SelectGroupDlg(QDialog):                                              # к
                 self.ui.tableWidget.setItem(co, 0, QTableWidgetItem(f"{it[0]}"))
                 self.ui.tableWidget.setItem(co, 1, QTableWidgetItem(f"{it[1]}"))
 
-    def create_new_group(self):                                                     # Диалог создания новой группы
+    def create_new_group(self):  # Диалог создания новой группы
         text, ok = QInputDialog.getText(self, 'Новая группа', 'Введите название: ')
         if ok:
             db.create_group(text)
             self.fill_dialog(db.show_data_of_groups())
 
-    def delete_group(self):                            # Удаляет группу и её содержимое
+    def delete_group(self):  # Удаляет группу и её содержимое
         check = self.critical_warning()
         try:
             if check == True:
@@ -157,24 +156,35 @@ class SelectGroupDlg(QDialog):                                              # к
         try:
             db.id = int(self.ui.tableWidget.item(self.ui.tableWidget.currentRow(), 0).text())
             ex.ui.label.setText(list(filter(lambda x: x[0] == db.id, db.show_data_of_groups()))[0][1])
+            ui = ex.ui
+            buttons = [ui.pushButton, ui.pushButton_2, ui.pushButton_3]  # выключаем кнопки
+            [i.setEnabled(False) for i in buttons]
             self.hide()
             ex.completer_items()
         except:
             pass
 
-    def critical_warning(self): # Предупреждение об удалении
+    def critical_warning(self):  # Предупреждение об удалении
         qm = QMessageBox()
-        ret = qm.critical(self, 'Предупреждение', "Данное действие удалит всю группу и все входящие в нёё записи",  qm.Ok | qm.Cancel)
+        ret = qm.critical(self, 'Предупреждение', "Данное действие удалит всю группу и все входящие в нёё записи",
+                          qm.Ok | qm.Cancel)
 
         if ret == qm.Ok:
             return True
         else:
             return False
 
+
+def change_item():
+    idi_change.change_item()
+    idi_change.show()
+
+
 class mywindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(mywindow, self).__init__()
 
+        self.chosen_item = None
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.completer_items()
@@ -190,13 +200,11 @@ class mywindow(QtWidgets.QMainWindow):
         self.ui.dateEdit_2.dateChanged.connect(lambda: self.if_date_changed())
 
         self.ui.pushButton_5.clicked.connect(self.add_item)
-        self.ui.pushButton.clicked.connect(self.change_item)
+        self.ui.pushButton.clicked.connect(change_item)
         self.ui.pushButton_3.clicked.connect(self.add_operation)
         self.ui.pushButton_2.clicked.connect(self.delete_quantity_row)
 
-        self.ui.tableWidget_2.setColumnHidden(4, True) # Скрывает поле id из таблицы
-
-
+        self.ui.tableWidget_2.setColumnHidden(4, True)  # Скрывает поле id из таблицы
 
         def add_menu():
             layout = QHBoxLayout()
@@ -244,7 +252,7 @@ class mywindow(QtWidgets.QMainWindow):
             db.import_from_xls(fname[0], date.today())
 
     def completer_items(self):
-        self.strList = [i[1] for i in db.show_data()] # Создаём список слов
+        self.strList = [i[1] for i in db.show_data()]  # Создаём список слов
         # Создаём QCompleter, в который устанавливаем список, а также указатель на родителя
         completer = QCompleter(self.strList, self.ui.lineEdit)
         completer.setCaseSensitivity(False)
@@ -260,18 +268,19 @@ class mywindow(QtWidgets.QMainWindow):
         self.chosen_item = self.ui.lineEdit.text()
 
         self.ui.label_2.setText(self.chosen_item)
-        self.ui.label_3.setText(db.show_item_by_id(db.get_id_from_items(ex.chosen_item)[0])[1]) # вставляет остаток товара
-        self.fill_table_operations(self.get_item_quantyties())                                  # заполняет таблицу операциями
+        self.ui.label_3.setText(
+            db.show_item_by_id(db.get_id_from_items(ex.chosen_item)[0])[1])  # вставляет остаток товара
+        self.fill_table_operations(self.get_item_quantyties())  # заполняет таблицу операциями
         self.ui.label_5.setText(str(db.calculate_items(db.get_id_from_items(self.chosen_item)[0])))
 
         ui = self.ui
-        buttons = [ui.pushButton, ui.pushButton_2, ui.pushButton_3] # включаем кнопки
+        buttons = [ui.pushButton, ui.pushButton_2, ui.pushButton_3]  # включаем кнопки
         [i.setEnabled(True) for i in buttons]
 
-        QTimer.singleShot(0, self.ui.lineEdit.clear) #очищаем изменение текста
+        QTimer.singleShot(0, self.ui.lineEdit.clear)  # очищаем изменение текста
 
-    def fill_table_operations(self, lst):                                                     # заполняет виджет таблицы группами из бд
-        if lst == []:
+    def fill_table_operations(self, lst):  # заполняет виджет таблицы группами из бд
+        if not lst:
             self.ui.tableWidget_2.setRowCount(0)
         else:
             for co, it in enumerate(lst):
@@ -286,7 +295,6 @@ class mywindow(QtWidgets.QMainWindow):
                 self.ui.tableWidget_2.setItem(co, 2, QTableWidgetItem(f"{it[3]}"))
                 self.ui.tableWidget_2.setItem(co, 3, QTableWidgetItem(f"{it[4]}"))
                 self.ui.tableWidget_2.setItem(co, 4, QTableWidgetItem(f"{it[0]}"))
-
 
 
 app = QApplication(sys.argv)
