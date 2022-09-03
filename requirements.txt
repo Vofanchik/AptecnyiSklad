@@ -2,3 +2,4 @@ PyQt5==5.15.7
 pyqt5-tools
 # pyinstaller
 openpyxl
+docx
