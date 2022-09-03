@@ -65,10 +65,10 @@ class InputDialogItem(QDialog):                                             # к
         super().__init__(**kwargs)
         self.ui = Ui_AddItemDialog()
         self.ui.setupUi(self)
-        # if change_item == False:
-        #     self.compl_iniit()
-        # else:
-        #     pass
+        if change_item == False:
+            self.compl_iniit()
+        else:
+            pass
 
 
     def compl_iniit(self):
@@ -127,7 +127,7 @@ class SelectGroupDlg(QDialog):                                              # к
 
 
 
-    def fill_dialog(self, lst):                                                     # заполняет виджет таблицы группами из бд
+    def fill_dialog(self, lst):                                               # заполняет виджет таблицы группами из бд
         if lst == []:
             self.ui.tableWidget.setRowCount(0)
         else:
@@ -144,17 +144,23 @@ class SelectGroupDlg(QDialog):                                              # к
 
     def delete_group(self):                            # Удаляет группу и её содержимое
         check = self.critical_warning()
-        if check == True:
-            db.delete_group(self.ui.tableWidget.item(self.ui.tableWidget.currentRow(), 0).text())
-            self.fill_dialog(db.show_data_of_groups())
-        else:
-            return
+        try:
+            if check == True:
+                db.delete_group(self.ui.tableWidget.item(self.ui.tableWidget.currentRow(), 0).text())
+                self.fill_dialog(db.show_data_of_groups())
+            else:
+                return
+        except:
+            pass
 
     def checkout_group(self):
-        db.id = int(self.ui.tableWidget.item(self.ui.tableWidget.currentRow(), 0).text())
-        ex.ui.label.setText(list(filter(lambda x: x[0] == db.id, db.show_data_of_groups()))[0][1])
-        self.hide()
-        ex.completer_items()
+        try:
+            db.id = int(self.ui.tableWidget.item(self.ui.tableWidget.currentRow(), 0).text())
+            ex.ui.label.setText(list(filter(lambda x: x[0] == db.id, db.show_data_of_groups()))[0][1])
+            self.hide()
+            ex.completer_items()
+        except:
+            pass
 
     def critical_warning(self): # Предупреждение об удалении
         qm = QMessageBox()
@@ -172,7 +178,10 @@ class mywindow(QtWidgets.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.completer_items()
-        self.ui.label.setText(list(filter(lambda x: x[0] == db.id, db.show_data_of_groups()))[0][1])
+        try:
+            self.ui.label.setText(list(filter(lambda x: x[0] == db.id, db.show_data_of_groups()))[0][1])
+        except:
+            pass
         self.ui.dateEdit.setDisplayFormat("yyyy-MM-dd")
         self.ui.dateEdit_2.setDisplayFormat("yyyy-MM-dd")
         self.ui.dateEdit.setDate(QDate.currentDate().addDays(-31))
@@ -183,6 +192,9 @@ class mywindow(QtWidgets.QMainWindow):
         self.ui.pushButton_5.clicked.connect(self.add_item)
         self.ui.pushButton.clicked.connect(self.change_item)
         self.ui.pushButton_3.clicked.connect(self.add_operation)
+        self.ui.pushButton_2.clicked.connect(self.delete_quantity_row)
+
+        self.ui.tableWidget_2.setColumnHidden(4, True) # Скрывает поле id из таблицы
 
 
 
@@ -199,6 +211,11 @@ class mywindow(QtWidgets.QMainWindow):
             self.setLayout(layout)
 
         add_menu()
+
+    def delete_quantity_row(self):
+        db.delete_quantity(self.ui.tableWidget_2.item(self.ui.tableWidget_2.currentRow(), 4).text())
+        self.ui.label_5.setText(str(db.calculate_items(db.get_id_from_items(self.chosen_item)[0])))
+        self.fill_table_operations(self.get_item_quantyties())
 
     def add_operation(self):
         iodi.ui.label.setText(self.ui.label_2.text())
@@ -246,7 +263,12 @@ class mywindow(QtWidgets.QMainWindow):
         self.ui.label_3.setText(db.show_item_by_id(db.get_id_from_items(ex.chosen_item)[0])[1]) # вставляет остаток товара
         self.fill_table_operations(self.get_item_quantyties())                                  # заполняет таблицу операциями
         self.ui.label_5.setText(str(db.calculate_items(db.get_id_from_items(self.chosen_item)[0])))
-        QTimer.singleShot(0, self.ui.lineEdit.clear)
+
+        ui = self.ui
+        buttons = [ui.pushButton, ui.pushButton_2, ui.pushButton_3] # включаем кнопки
+        [i.setEnabled(True) for i in buttons]
+
+        QTimer.singleShot(0, self.ui.lineEdit.clear) #очищаем изменение текста
 
     def fill_table_operations(self, lst):                                                     # заполняет виджет таблицы группами из бд
         if lst == []:
@@ -263,6 +285,7 @@ class mywindow(QtWidgets.QMainWindow):
 
                 self.ui.tableWidget_2.setItem(co, 2, QTableWidgetItem(f"{it[3]}"))
                 self.ui.tableWidget_2.setItem(co, 3, QTableWidgetItem(f"{it[4]}"))
+                self.ui.tableWidget_2.setItem(co, 4, QTableWidgetItem(f"{it[0]}"))
 
 
 

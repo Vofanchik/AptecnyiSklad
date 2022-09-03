@@ -33,6 +33,9 @@
      </item>
      <item row="3" column="3">
       <widget class="QPushButton" name="pushButton_2">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string>Удалить операцию</string>
        </property>
@@ -103,12 +106,20 @@
          <string>Документ прихода/кому выдано</string>
         </property>
        </column>
+       <column>
+        <property name="text">
+         <string>id</string>
+        </property>
+       </column>
       </widget>
      </item>
      <item row="3" column="0">
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
         <widget class="QPushButton" name="pushButton_3">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="text">
           <string>Добавить операцию</string>
          </property>
@@ -152,6 +163,9 @@
      </item>
      <item row="0" column="2">
       <widget class="QPushButton" name="pushButton">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string>Изменить товар</string>
        </property>

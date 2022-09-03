@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import date
 
 from XlsxImport import XlsxImport
 
@@ -177,15 +178,16 @@ class DataBase:
                         WHERE name = "{item_name}"''').fetchone()
 
 
-# t = DataBase()
+t = DataBase()
 # t.delete_group(6)
-# t.id = 1
+t.id = 2
+# t.add_items('Афобазол', "упаковка", "афик")
 # print(t.show_data_of_groups(32))
 # t.change_item(1, 'лох', "пидр",'чмо')
 # print(t.show_item_by_id(32))
 # print()
 # t.create_group('пенис')
-# t.import_from_xls('wb1.xlsx', date.today())
+t.import_from_xls('wb1.xlsx', date.today())
 # t.add_quantity(1, 10, False, '2022-06-14', 'Инфекционное')
 # t.delete_item(9)
 # print(t.calculate_items(1))
