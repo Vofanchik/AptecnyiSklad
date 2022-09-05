@@ -20,7 +20,7 @@ class Ui_MainWindow(object):
         self.gridLayoutWidget = QtWidgets.QWidget(self.centralwidget)
         self.gridLayoutWidget.setGeometry(QtCore.QRect(20, 40, 1091, 761))
         self.gridLayoutWidget.setObjectName("gridLayoutWidget")
-        self.gridLayout = QtWidgets.QGridLayout(self.gridLayoutWidget)
+        self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
         self.gridLayout.setSizeConstraint(QtWidgets.QLayout.SetMinAndMaxSize)
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
         self.gridLayout.setObjectName("gridLayout")

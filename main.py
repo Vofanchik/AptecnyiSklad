@@ -301,6 +301,7 @@ class mywindow(QtWidgets.QMainWindow):
                                                 '', "Xlsx files (*.xls *.xlsx)")
             try:
                 db.import_from_xls(fname[0], date.today())
+                ex.completer_items()
             except:
                 pass
 

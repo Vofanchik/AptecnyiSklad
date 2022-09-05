@@ -34,16 +34,9 @@ class Word_export:
             row_cells[3].text = lst[3]
 
 
-        for i, a in zip(range(0,3),[0.5, 5, 2, 1]):
+        for i, a in zip(range(0,3),[0.5, 10, 2, 1]):
             for cell in table.columns[i].cells:
                 cell.width = Cm(a)
-
-
-        # for cell in table.columns[0].cells:
-        #     cell.width = Cm(0.5)
-        #
-        # for cell in table.columns[1].cells:
-        #     cell.width = Cm(3)
 
         document.save(file_name)
 
