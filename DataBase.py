@@ -141,6 +141,7 @@ class DataBase:
         return \
             self.cur.execute(f'''SELECT sum(quantity) FROM quantity{self.id} WHERE item_id = {item_id}''').fetchone()[0]
 
+
     def import_from_xls(self, file_name, date_today):  # импортируем из экселя
         p = XlsxImport(file_name)
         data = p.import_into_list()

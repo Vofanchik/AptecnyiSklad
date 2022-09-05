@@ -10,6 +10,7 @@ from PyQt5.QtCore import QTimer, QDate
 from PyQt5.QtWidgets import QApplication, QHBoxLayout, QAction, QDialog, QTableWidgetItem, QInputDialog, QMessageBox, \
     QFileDialog, QCompleter
 
+from  XlsxImport import Word_export
 from DataBase import DataBase
 from UI_files.maiwindo import Ui_MainWindow
 from UI_files.group_select import Ui_Form
@@ -123,7 +124,15 @@ class ResidueDialog(QDialog):  # класс диалога с остатками
         self.ui = Ui_DialogResidue()
         self.ui.setupUi(self)
         self.ui.buttonBox.accepted.connect(self.on_ok_clicked)
+        self.ui.pushButton.clicked.connect(self.on_add_clicked)
         # self.ui.tableWidget.setColumnHidden(0, True)  # Скрывает поле id из таблицы
+
+    def on_add_clicked(self):
+        lst = list(filter(lambda x : x[3] != '0.0' and x[3] != 'None', db.return_residue()))
+        fname = QFileDialog.getSaveFileName(self, 'Save file',
+                                            '', "Word files (*.docx *.doc)")
+
+        import_word.form_docx(lst, fname[0])
 
 
     def fill_residue_table(self):
@@ -218,7 +227,11 @@ class mywindow(QtWidgets.QMainWindow):
 
         self.chosen_item = None
         self.ui = Ui_MainWindow()
+
         self.ui.setupUi(self)
+        # print(self.ui.gridLayout)
+        # print(self.ui.centralwidget)
+
         self.completer_items()
         try:
             self.ui.label.setText(list(filter(lambda x: x[0] == db.id, db.show_data_of_groups()))[0][1])
@@ -341,11 +354,15 @@ app = QApplication(sys.argv)
 db = DataBase()
 db.id = None
 ex = mywindow()
+# print(ex.ui.gridLayout)
+
 ex.chosen_item = 'Наименование'
 sgd = SelectGroupDlg(root=ex)
 idi = InputDialogItem()
 idi_change = InputDialogItem(True)
 iodi = InputOperationDialogItem()
 rd = ResidueDialog()
+import_word = Word_export()
+
 ex.show()
 sys.exit(app.exec_())
