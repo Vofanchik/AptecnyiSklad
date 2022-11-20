@@ -14,11 +14,11 @@ class DataBase:
 
     def show_item_by_id(self, id_item):
         return self.cur.execute(
-            f'''SELECT name, unit, mnn_name FROM items{self.id}
-             WHERE id = {id_item}''').fetchone()
+            '''SELECT name, unit, mnn_name FROM items{}
+             WHERE id = {}'''.format(self.id, id_item)).fetchone()
 
     def change_item(self, name, package, mnn, id):
-        self.cur.execute(f"UPDATE items{self.id} SET name = '{name}', unit = '{package}', mnn_name = '{mnn}' WHERE id = '{id}'")
+        self.cur.execute("UPDATE items{} SET name = '{}', unit = '{}', mnn_name = '{}' WHERE id = '{}'".format(self.id, name, package, mnn, id))
         self.conn.commit()
 
     def create_group(self, name):  # создаесм переменные таблицы
@@ -29,29 +29,29 @@ class DataBase:
         self.id = self.cur.lastrowid  # присваиваем id последней созданной группы
         print(self.id)
         self.cur.execute(  # создаем таблицу с названием items_id для каждой группы
-            f'''CREATE TABLE IF NOT EXISTS items{self.id}(
+            '''CREATE TABLE IF NOT EXISTS items{}(
            id integer primary key,
            name text NOT NULL UNIQUE,             
            unit text DEFAULT "уп",
             mnn_name text NOT NULL default "",
-            UNIQUE ("name") ON CONFLICT IGNORE)''')
+            UNIQUE ("name") ON CONFLICT IGNORE)'''.format(self.id))
         self.conn.commit()
 
         self.cur.execute(  # таблица quantity будет содержать все операции по приему выдаче
-            f'''CREATE TABLE IF NOT EXISTS quantity{self.id}(
+            '''CREATE TABLE IF NOT EXISTS quantity{}(
            id integer primary key,
            item_id INTEGER,
            quantity REAL NOT NULL,
            date_of_insert TEXT,
            doc TEXT,
-           FOREIGN KEY (item_id) REFERENCES items{self.id}(id))
-           ''')
+           FOREIGN KEY (item_id) REFERENCES items{}(id))
+           '''.format(self.id, self.id))
         self.conn.commit()
 
     def delete_group(self, id_gr: int):
-        self.cur.execute(f'DELETE from groups where id = {id_gr}')
-        self.cur.execute(f'DROP TABLE IF EXISTS quantity{id_gr}')
-        self.cur.execute(f'DROP TABLE IF EXISTS items{id_gr}')
+        self.cur.execute('DELETE from groups where id = {}'.format(id_gr))
+        self.cur.execute('DROP TABLE IF EXISTS quantity{}'.format(id_gr))
+        self.cur.execute('DROP TABLE IF EXISTS items{}'.format(id_gr))
         self.conn.commit()
 
     def create_table(self):  # создаем постоянные таблицы
@@ -89,7 +89,7 @@ class DataBase:
 
         self.cur.execute("INSERT INTO units(name) VALUES(?)", (unit,))
         self.cur.execute("INSERT INTO mnn(name) VALUES(?)", (mnn,))
-        self.cur.execute(f"INSERT INTO items{self.id}(name, unit, mnn_name) VALUES(?,?,?)", (item_name, unit, mnn,))
+        self.cur.execute("INSERT INTO items{}(name, unit, mnn_name) VALUES(?,?,?)".format(self.id), (item_name, unit, mnn,))
         self.conn.commit()
         return self.cur.lastrowid
 
@@ -98,48 +98,48 @@ class DataBase:
             quant *= -1
             self.cur.execute("INSERT INTO division(name) VALUES(?)", (doc,))
 
-        self.cur.execute(f"INSERT INTO quantity{self.id}(item_id, quantity,date_of_insert,doc) VALUES(?,?,?,?)",
+        self.cur.execute("INSERT INTO quantity{}(item_id, quantity,date_of_insert,doc) VALUES(?,?,?,?)".format(self.id),
                          (id_item, quant, date, doc,))
         self.conn.commit()
 
     def show_package(self):  # возвращаем Упаковки
         try:
-            return self.cur.execute(f'''SELECT name FROM units''').fetchmany(10000)
+            return self.cur.execute('''SELECT name FROM units''').fetchmany(10000)
         except:
             return []
 
     def show_division(self):  # возвращаем отделения
         try:
-            return self.cur.execute(f'''SELECT name FROM division''').fetchmany(10000)
+            return self.cur.execute('''SELECT name FROM division''').fetchmany(10000)
         except:
             return []
 
 
     def show_mnn(self):  # возвращаем мнн
         try:
-            return self.cur.execute(f'''SELECT name FROM mnn''').fetchmany(1000000)
+            return self.cur.execute('''SELECT name FROM mnn''').fetchmany(1000000)
         except:
             return []
 
 
     def show_data(self):  # возвращаем 10000  записей товара
         try:
-            return self.cur.execute(f'''SELECT id, name, unit, mnn_name FROM items{self.id} ORDER BY id ASC''').fetchmany(10000)
+            return self.cur.execute('''SELECT id, name, unit, mnn_name FROM items{} ORDER BY id ASC'''.format(self.id)).fetchmany(10000)
         except:
             return []
 
     def delete_quantity(self, quant_id):  # удаляем проиход/расход
-        self.cur.execute(f"DELETE from quantity{self.id} where id = {quant_id}")
+        self.cur.execute("DELETE from quantity{} where id = {}".format(self.id, quant_id))
         self.conn.commit()
 
     def delete_item(self, item_id):  # удаляем товар
-        self.cur.execute(f"DELETE from items{self.id} where id = {item_id}")
-        self.cur.execute(f"DELETE from quantity{self.id} where item_id = {item_id}")
+        self.cur.execute("DELETE from items{} where id = {}".format(self.id, item_id))
+        self.cur.execute("DELETE from quantity{} where item_id = {}".format(self.id, item_id))
         self.conn.commit()
 
     def calculate_items(self, item_id):  # возвращаем остаток товара
         return \
-            self.cur.execute(f'''SELECT sum(quantity) FROM quantity{self.id} WHERE item_id = {item_id}''').fetchone()[0]
+            self.cur.execute('''SELECT sum(quantity) FROM quantity{} WHERE item_id = {}'''.format(self.id, item_id)).fetchone()[0]
 
 
     def import_from_xls(self, file_name, date_today):  # импортируем из экселя
@@ -148,7 +148,7 @@ class DataBase:
         del p
         for i in data:
             b = self.add_items(i[0], i[1])
-            info = self.cur.execute(f'SELECT * FROM items{self.id} WHERE id=?', (b,))
+            info = self.cur.execute('SELECT * FROM items{} WHERE id=?'.format(self.id), (b,))
             if info.fetchone() is None:
                 return
             else:
@@ -156,14 +156,14 @@ class DataBase:
 
     def select_quant_by_date(self, from_date, to_date):  # возвращаем проиход/расход товара за период времени
         return self.cur.execute(
-            f'''SELECT * FROM quantity{self.id} LEFT JOIN items{self.id} ON quantity{self.id}.item_id = items{self.id}.id
-                                    WHERE date_of_insert BETWEEN "{from_date}" AND "{to_date}"''').fetchmany(10000)
+            '''SELECT * FROM quantity{} LEFT JOIN items{} ON quantity{}.item_id = items{}.id
+                                    WHERE date_of_insert BETWEEN "{}" AND "{}"'''.format(self.id, self.id, self.id, self.id, from_date, to_date)).fetchmany(10000)
 
     def show_quantyty_by_id_date(self, id_item, from_date, to_date):
         return self.cur.execute(
-            f'''SELECT * FROM quantity{self.id} 
-                WHERE date_of_insert BETWEEN "{from_date}" AND "{to_date}"
-                AND item_id = {id_item}''').fetchmany(10000)
+            '''SELECT * FROM quantity{} 
+                WHERE date_of_insert BETWEEN "{}" AND "{}"
+                AND item_id = {}'''.format(self.id, from_date, to_date, id_item)).fetchmany(10000)
 
     def return_residue(self):  # считает остатки по всем позициям
         all_residue = []
@@ -174,12 +174,12 @@ class DataBase:
         return all_residue
 
     def show_data_of_groups(self):  # возвращаем 10000  записей товара
-        return self.cur.execute(f'''SELECT id, name FROM groups ORDER BY id ASC''').fetchmany(10000)
+        return self.cur.execute('''SELECT id, name FROM groups ORDER BY id ASC''').fetchmany(10000)
 
     def get_id_from_items(self, item_name):
         return self.cur.execute(
-            f'''SELECT id FROM items{self.id} 
-                        WHERE name = "{item_name}"''').fetchone()
+            '''SELECT id FROM items{} 
+                        WHERE name = "{}"'''.format(self.id, item_name)).fetchone()
 
 
 # t = DataBase()

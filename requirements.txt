@@ -1,4 +1,4 @@
-PyQt5==5.15.7
+PyQt5==5.12
 # pyqt5-tools
 # pyinstaller
 openpyxl

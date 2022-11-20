@@ -17,6 +17,8 @@ from UI_files.group_select import Ui_Form
 from UI_files.Change_item import Ui_AddItemDialog
 from UI_files.oper_dialog import Ui_OperationDialog
 from UI_files.residue_dialog import Ui_DialogResidue
+import os
+
 
 
 class InputOperationDialogItem(QDialog):  # класс диалога с созданием нового товара
@@ -130,7 +132,7 @@ class ResidueDialog(QDialog):  # класс диалога с остатками
     def on_add_clicked(self):
         lst = list(filter(lambda x : x[3] != '0.0' and x[3] != 'None', db.return_residue()))
         fname = QFileDialog.getSaveFileName(self, 'Save file',
-                                            '', "Word files (*.docx *.doc)")
+                                            '', "Word files (*.docx *.doc *.odt)")
 
         import_word.form_docx(lst, fname[0])
 
@@ -142,10 +144,10 @@ class ResidueDialog(QDialog):  # класс диалога с остатками
         else:
             for co, it in enumerate(lst):
                 self.ui.tableWidget.setRowCount(co + 1)
-                self.ui.tableWidget.setItem(co, 0, QTableWidgetItem(f"{it[0]}"))
-                self.ui.tableWidget.setItem(co, 1, QTableWidgetItem(f"{it[1]}"))
-                self.ui.tableWidget.setItem(co, 2, QTableWidgetItem(f"{it[3]}"))
-                self.ui.tableWidget.setItem(co, 3, QTableWidgetItem(f"{it[2]}"))
+                self.ui.tableWidget.setItem(co, 0, QTableWidgetItem("{}".format(it[0])))
+                self.ui.tableWidget.setItem(co, 1, QTableWidgetItem("{}".format(it[1])))
+                self.ui.tableWidget.setItem(co, 2, QTableWidgetItem("{}".format(it[3])))
+                self.ui.tableWidget.setItem(co, 3, QTableWidgetItem("{}".format(it[2])))
 
     def on_ok_clicked(self):
         ex.chosen_item = self.ui.tableWidget.item(self.ui.tableWidget.currentRow(), 0).text()
@@ -177,8 +179,8 @@ class SelectGroupDlg(QDialog):  # класс диалога с группами
         else:
             for co, it in enumerate(lst):
                 self.ui.tableWidget.setRowCount(co + 1)
-                self.ui.tableWidget.setItem(co, 0, QTableWidgetItem(f"{it[0]}"))
-                self.ui.tableWidget.setItem(co, 1, QTableWidgetItem(f"{it[1]}"))
+                self.ui.tableWidget.setItem(co, 0, QTableWidgetItem("{}".format(it[0])))
+                self.ui.tableWidget.setItem(co, 1, QTableWidgetItem("{}".format(it[1])))
 
     def create_new_group(self):  # Диалог создания новой группы
         text, ok = QInputDialog.getText(self, 'Новая группа', 'Введите название: ')
@@ -340,15 +342,15 @@ class mywindow(QtWidgets.QMainWindow):
             for co, it in enumerate(lst):
                 self.ui.tableWidget_2.setRowCount(co + 1)
                 if it[2] > 0:
-                    self.ui.tableWidget_2.setItem(co, 0, QTableWidgetItem(f"Приход"))
-                    self.ui.tableWidget_2.setItem(co, 1, QTableWidgetItem(f"{it[2]}"))
+                    self.ui.tableWidget_2.setItem(co, 0, QTableWidgetItem("Приход"))
+                    self.ui.tableWidget_2.setItem(co, 1, QTableWidgetItem("{}".format(it[2])))
                 else:
-                    self.ui.tableWidget_2.setItem(co, 0, QTableWidgetItem(f"Расход"))
-                    self.ui.tableWidget_2.setItem(co, 1, QTableWidgetItem(f"{it[2]}"))
+                    self.ui.tableWidget_2.setItem(co, 0, QTableWidgetItem("Расход"))
+                    self.ui.tableWidget_2.setItem(co, 1, QTableWidgetItem("{}".format(it[2])))
 
-                self.ui.tableWidget_2.setItem(co, 2, QTableWidgetItem(f"{it[3]}"))
-                self.ui.tableWidget_2.setItem(co, 3, QTableWidgetItem(f"{it[4]}"))
-                self.ui.tableWidget_2.setItem(co, 4, QTableWidgetItem(f"{it[0]}"))
+                self.ui.tableWidget_2.setItem(co, 2, QTableWidgetItem("{}".format(it[3])))
+                self.ui.tableWidget_2.setItem(co, 3, QTableWidgetItem("{}".format(it[4])))
+                self.ui.tableWidget_2.setItem(co, 4, QTableWidgetItem("{}".format(it[0])))
 
 
 app = QApplication(sys.argv)

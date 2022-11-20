@@ -14,7 +14,7 @@ class Word_export:
         section.page_width = Mm(210)
         section.page_height = Mm(297)
 
-        p = document.add_paragraph(f'Остатки по состоянию на {datetime.date.today():%d.%m.%Y}')
+        p = document.add_paragraph('Остатки по состоянию на {}'.format(datetime.date.today()))
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         table = document.add_table(rows=1, cols=4, style='Table Grid')
 
