@@ -128,6 +128,13 @@ class DataBase:
         except:
             return []
 
+    def show_data_order_by_name(self):  # возвращаем 10000  записей товара в алфавитном порядке
+        try:
+            return self.cur.execute('''SELECT id, name, unit, mnn_name FROM items{} ORDER BY name ASC'''.format(self.id)).fetchmany(10000)
+        except:
+            return []
+
+
     def delete_quantity(self, quant_id):  # удаляем проиход/расход
         self.cur.execute("DELETE from quantity{} where id = {}".format(self.id, quant_id))
         self.conn.commit()
@@ -167,7 +174,7 @@ class DataBase:
 
     def return_residue(self):  # считает остатки по всем позициям
         all_residue = []
-        for a in self.show_data():
+        for a in self.show_data_order_by_name():
             one_residue = [a[1], a[2], a[3], str(self.calculate_items(a[0]))]
             all_residue.append(one_residue)
 

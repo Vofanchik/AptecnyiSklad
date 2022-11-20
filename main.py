@@ -21,7 +21,7 @@ import os
 
 
 
-class InputOperationDialogItem(QDialog):  # класс диалога с созданием нового товара
+class InputOperationDialogItem(QDialog):  # класс диалога с созданием новой операции
     def __init__(self, **kwargs):  # def __init__(self, parent=None):
         super().__init__(**kwargs)
         self.strList = None
@@ -92,7 +92,7 @@ class InputDialogItem(QDialog):  # класс диалога с создание
 
         self.ui.buttonBox.accepted.connect(self.accept_clicked)
 
-    def accept_clicked(self):
+    def accept_clicked(self): # Скрипт при добавлении нового товара
         db.add_items(self.ui.lineEdit.text(), self.ui.lineEdit_2.text(), self.ui.lineEdit_3.text())
         ex.completer_items()
         self.compl_iniit()
@@ -101,9 +101,13 @@ class InputDialogItem(QDialog):  # класс диалога с создание
         ui = ex.ui
         buttons = [ui.pushButton, ui.pushButton_2, ui.pushButton_3]  # включаем кнопки
         [i.setEnabled(True) for i in buttons]
+        # rd.fill_residue_table()
+        ex.fill_table_operations(lst=False)
+        ex.ui.label_5.setText("0.0")
+        ex.ui.label_3.setText(db.show_item_by_id(db.get_id_from_items(ex.chosen_item)[0])[1])
         self.hide()
 
-    def accept_clicked_2(self):
+    def accept_clicked_2(self): # скрипт для изменения названия товара
         id = db.get_id_from_items(ex.ui.label_2.text())[0]
         db.change_item(self.ui.lineEdit.text(), self.ui.lineEdit_2.text(), self.ui.lineEdit_3.text(), id)
         ex.chosen_item = self.ui.lineEdit.text()
