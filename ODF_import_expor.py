@@ -1,5 +1,7 @@
+import datetime
+
 from odf.opendocument import OpenDocumentText, load
-from odf.style import ParagraphProperties, Style, TableColumnProperties
+from odf.style import ParagraphProperties, Style, TableColumnProperties, TextProperties
 from odf.table import Table, TableColumn, TableRow, TableCell
 from odf.text import P
 
@@ -23,6 +25,9 @@ class OdtImport:
         widthwide = Style(name="Wwide", family="table-column")
         widthwide.addElement(TableColumnProperties(columnwidth="5.5cm"))
         textdoc.automaticstyles.addElement(widthwide)
+
+        p = P(text=('Остатки по состоянию на {:%d.%m.%Y}'.format(datetime.date.today())))
+        textdoc.text.addElement(p)
 
         table = Table()
         table.addElement(TableColumn(numbercolumnsrepeated=1, stylename=widthshort))
