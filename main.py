@@ -10,6 +10,7 @@ from PyQt5.QtCore import QTimer, QDate
 from PyQt5.QtWidgets import QApplication, QHBoxLayout, QAction, QDialog, QTableWidgetItem, QInputDialog, QMessageBox, \
     QFileDialog, QCompleter
 
+from ODF_import_expor import OdtImport
 from  XlsxImport import Word_export
 from DataBase import DataBase
 from UI_files.maiwindo import Ui_MainWindow
@@ -131,15 +132,23 @@ class ResidueDialog(QDialog):  # класс диалога с остатками
         self.ui.setupUi(self)
         self.ui.buttonBox.accepted.connect(self.on_ok_clicked)
         self.ui.pushButton.clicked.connect(self.on_add_clicked)
+        self.ui.pushButton_2.clicked.connect(self.on_add_clicked_odf)
+        self.ui.buttonBox.rejected.connect(self.on_cancell_clicked)
         # self.ui.tableWidget.setColumnHidden(0, True)  # Скрывает поле id из таблицы
 
-    def on_add_clicked(self):
+    def on_add_clicked(self): # импорт в word
         lst = list(filter(lambda x : x[3] != '0.0' and x[3] != 'None', db.return_residue()))
         fname = QFileDialog.getSaveFileName(self, 'Save file',
-                                            '', "Word files (*.docx *.doc *.odt)")
+                                            '', "Word files (*.docx *.doc)")
 
         import_word.form_docx(lst, fname[0])
 
+    def on_add_clicked_odf(self): # импорт в odt
+        lst = list(filter(lambda x : x[3] != '0.0' and x[3] != 'None', db.return_residue()))
+        fname = QFileDialog.getSaveFileName(self, 'Save file',
+                                            '', "Open Office Document text files (*.odt)")
+
+        import_odt.form_odt(lst, fname[0])
 
     def fill_residue_table(self):
         lst = list(filter(lambda x : x[3] != '0.0' and x[3] != 'None', db.return_residue()))
@@ -164,6 +173,9 @@ class ResidueDialog(QDialog):  # класс диалога с остатками
         ex.ui.pushButton.setEnabled(True)
         ex.ui.pushButton_2.setEnabled(True)
         ex.ui.pushButton_3.setEnabled(True)
+        rd.hide()
+
+    def on_cancell_clicked(self):
         rd.hide()
 
 class SelectGroupDlg(QDialog):  # класс диалога с группами
@@ -370,6 +382,7 @@ idi_change = InputDialogItem(True)
 iodi = InputOperationDialogItem()
 rd = ResidueDialog()
 import_word = Word_export()
+import_odt = OdtImport()
 
 ex.show()
 sys.exit(app.exec_())

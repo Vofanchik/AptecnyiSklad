@@ -1,5 +1,6 @@
 PyQt5==5.12
 # pyqt5-tools
 # pyinstaller
-openpyxl
-python-docx
+openpyxl==3.0.10
+python-docx==0.8.11
+odfpy==1.4.1
