@@ -1,4 +1,4 @@
-from odf.opendocument import OpenDocumentText
+from odf.opendocument import OpenDocumentText, load
 from odf.style import ParagraphProperties, Style, TableColumnProperties
 from odf.table import Table, TableColumn, TableRow, TableCell
 from odf.text import P
@@ -56,6 +56,23 @@ class OdtImport:
 
         textdoc.text.addElement(table)
         textdoc.save(file_name)
+
+class OdsExport:
+    def export_from_ods(self, file_name):
+        d = load(file_name)
+        rows = d.getElementsByType(TableRow)
+        items = []
+        for row in rows:
+            cells = row.getElementsByType(TableCell)
+            for cell in cells:
+                tps = cell.getElementsByType(P)
+                for x in tps:
+                    items.append(str(x.firstChild))
+
+        res = list(zip(items[1::4], items[2::4], items[3::4]))
+        print(res)
+        return res
+
 
 # p=OdtImport()
 # p.form_odt()

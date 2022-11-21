@@ -2,6 +2,7 @@ import sqlite3
 from datetime import date
 from pprint import pprint
 
+from ODF_import_expor import OdsExport
 from XlsxImport import XlsxImport
 
 
@@ -27,7 +28,6 @@ class DataBase:
         self.conn.commit()
 
         self.id = self.cur.lastrowid  # присваиваем id последней созданной группы
-        print(self.id)
         self.cur.execute(  # создаем таблицу с названием items_id для каждой группы
             '''CREATE TABLE IF NOT EXISTS items{}(
            id integer primary key,
@@ -152,6 +152,19 @@ class DataBase:
     def import_from_xls(self, file_name, date_today):  # импортируем из экселя
         p = XlsxImport(file_name)
         data = p.import_into_list()
+        del p
+        for i in data:
+            b = self.add_items(i[0], i[1])
+            info = self.cur.execute('SELECT * FROM items{} WHERE id=?'.format(self.id), (b,))
+            if info.fetchone() is None:
+                return
+            else:
+                self.add_quantity(b, i[2], True, date_today, '')
+
+    def import_from_ods(self, file_name, date_today):  # импортируем из ods
+        p = OdsExport()
+        data = p.export_from_ods(file_name)
+        print(data)
         del p
         for i in data:
             b = self.add_items(i[0], i[1])

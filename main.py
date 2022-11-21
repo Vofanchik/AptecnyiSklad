@@ -10,7 +10,7 @@ from PyQt5.QtCore import QTimer, QDate
 from PyQt5.QtWidgets import QApplication, QHBoxLayout, QAction, QDialog, QTableWidgetItem, QInputDialog, QMessageBox, \
     QFileDialog, QCompleter
 
-from ODF_import_expor import OdtImport
+from ODF_import_expor import OdtImport, OdsExport
 from  XlsxImport import Word_export
 from DataBase import DataBase
 from UI_files.maiwindo import Ui_MainWindow
@@ -247,8 +247,6 @@ class mywindow(QtWidgets.QMainWindow):
         self.ui = Ui_MainWindow()
 
         self.ui.setupUi(self)
-        # print(self.ui.gridLayout)
-        # print(self.ui.centralwidget)
 
         self.completer_items()
         try:
@@ -276,6 +274,7 @@ class mywindow(QtWidgets.QMainWindow):
             file = bar.addMenu("Действия")
             file.addAction("Открыть группы")
             file.addAction("Импортировать товары из .xlsx файла")
+            file.addAction("Импортировать товары из .ods файла")
 
             # open_groups = QAction("Open groups", self)
 
@@ -319,6 +318,15 @@ class mywindow(QtWidgets.QMainWindow):
                                                 '', "Xlsx files (*.xls *.xlsx)")
             try:
                 db.import_from_xls(fname[0], date.today())
+                ex.completer_items()
+            except:
+                pass
+
+        elif press.text() == "Импортировать товары из .ods файла":
+            fname = QFileDialog.getOpenFileName(self, 'Open file',
+                                                '', "Ods files (*.ods)")
+            try:
+                db.import_from_ods(fname[0], date.today())
                 ex.completer_items()
             except:
                 pass
@@ -385,4 +393,5 @@ import_word = Word_export()
 import_odt = OdtImport()
 
 ex.show()
+sgd.show()
 sys.exit(app.exec_())
