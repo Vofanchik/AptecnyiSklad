@@ -132,24 +132,34 @@ class ResidueDialog(QDialog):  # класс диалога с остатками
         self.ui.pushButton.clicked.connect(self.on_add_clicked)
         self.ui.pushButton_2.clicked.connect(self.on_add_clicked_odf)
         self.ui.buttonBox.rejected.connect(self.on_cancell_clicked)
+        self.ui.checkBox.stateChanged.connect(self.fill_residue_table)
         # self.ui.tableWidget.setColumnHidden(0, True)  # Скрывает поле id из таблицы
 
     def on_add_clicked(self): # импорт в word
-        lst = list(filter(lambda x : x[3] != '0.0' and x[3] != 'None', db.return_residue()))
+        if self.ui.checkBox.checkState() == 0:
+            lst = list(filter(lambda x: x[3] != '0.0' and x[3] != 'None', db.return_residue()))
+        else:
+            lst = list(db.return_residue())
         fname = QFileDialog.getSaveFileName(self, 'Save file',
                                             '', "Word files (*.docx *.doc)")
 
         import_word.form_docx(lst, fname[0])
 
     def on_add_clicked_odf(self): # импорт в odt
-        lst = list(filter(lambda x : x[3] != '0.0' and x[3] != 'None', db.return_residue()))
+        if self.ui.checkBox.checkState() == 0:
+            lst = list(filter(lambda x: x[3] != '0.0' and x[3] != 'None', db.return_residue()))
+        else:
+            lst = list(db.return_residue())
         fname = QFileDialog.getSaveFileName(self, 'Save file',
                                             '', "Open Office Document text files (*.odt)")
 
         import_odt.form_odt(lst, fname[0])
 
     def fill_residue_table(self):
-        lst = list(filter(lambda x : x[3] != '0.0' and x[3] != 'None', db.return_residue()))
+        if self.ui.checkBox.checkState() == 0:
+            lst = list(filter(lambda x : x[3] != '0.0' and x[3] != 'None', db.return_residue()))
+        else:
+            lst = list(db.return_residue())
         if not lst:
             self.ui.tableWidget.setRowCount(0)
         else:
@@ -159,6 +169,7 @@ class ResidueDialog(QDialog):  # класс диалога с остатками
                 self.ui.tableWidget.setItem(co, 1, QTableWidgetItem("{}".format(it[1])))
                 self.ui.tableWidget.setItem(co, 2, QTableWidgetItem("{}".format(it[3])))
                 self.ui.tableWidget.setItem(co, 3, QTableWidgetItem("{}".format(it[2])))
+
 
     def on_ok_clicked(self):
         ex.chosen_item = self.ui.tableWidget.item(self.ui.tableWidget.currentRow(), 0).text()
