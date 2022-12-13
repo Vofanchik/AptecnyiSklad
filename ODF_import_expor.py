@@ -69,11 +69,18 @@ class OdsExport:
         items = []
         for row in rows:
             cells = row.getElementsByType(TableCell)
+            counter = 0
             for cell in cells:
                 tps = cell.getElementsByType(P)
-                for x in tps:
-                    items.append(str(x.firstChild))
 
+                if counter == 3: #доп цикл нужен чтобы слова не склеивались!
+                    for x in tps:
+                        items.append(float(str(x.firstChild).replace(',', '.')))
+
+                else:
+                    for x in tps:
+                        items.append(str(x.firstChild))
+                counter+=1
         res = list(zip(items[1::4], items[2::4], items[3::4]))
         print(res)
         return res

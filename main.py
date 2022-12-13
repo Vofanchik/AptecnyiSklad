@@ -20,8 +20,6 @@ from UI_files.oper_dialog import Ui_OperationDialog
 from UI_files.residue_dialog import Ui_DialogResidue
 import os
 
-
-
 class InputOperationDialogItem(QDialog):  # класс диалога с созданием новой операции
     def __init__(self, **kwargs):  # def __init__(self, parent=None):
         super().__init__(**kwargs)
