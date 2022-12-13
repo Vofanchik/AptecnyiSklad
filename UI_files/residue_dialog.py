@@ -44,6 +44,9 @@ class Ui_DialogResidue(object):
         self.pushButton_2 = QtWidgets.QPushButton(DialogResidue)
         self.pushButton_2.setObjectName("pushButton_2")
         self.horizontalLayout.addWidget(self.pushButton_2)
+        self.pushButton_3 = QtWidgets.QPushButton(DialogResidue)
+        self.pushButton_3.setObjectName("pushButton_3")
+        self.horizontalLayout.addWidget(self.pushButton_3)
         self.checkBox = QtWidgets.QCheckBox(DialogResidue)
         self.checkBox.setObjectName("checkBox")
         self.horizontalLayout.addWidget(self.checkBox)
@@ -74,6 +77,7 @@ class Ui_DialogResidue(object):
         item.setText(_translate("DialogResidue", "МНН"))
         self.pushButton.setText(_translate("DialogResidue", "Сохранить в формате word"))
         self.pushButton_2.setText(_translate("DialogResidue", "Сохранить в формате odt"))
+        self.pushButton_3.setText(_translate("DialogResidue", "Удаление товара"))
         self.checkBox.setText(_translate("DialogResidue", "Показывать нулевые значения"))
 
 

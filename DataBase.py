@@ -19,7 +19,8 @@ class DataBase:
              WHERE id = {}'''.format(self.id, id_item)).fetchone()
 
     def change_item(self, name, package, mnn, id):
-        self.cur.execute("UPDATE items{} SET name = '{}', unit = '{}', mnn_name = '{}' WHERE id = '{}'".format(self.id, name, package, mnn, id))
+        self.cur.execute("UPDATE items{} SET name = '{}', unit = '{}', mnn_name = '{}' WHERE id = '{}'"
+                         .format(self.id, name, package, mnn, id))
         self.conn.commit()
 
     def create_group(self, name):  # создаесм переменные таблицы
@@ -89,7 +90,8 @@ class DataBase:
 
         self.cur.execute("INSERT INTO units(name) VALUES(?)", (unit,))
         self.cur.execute("INSERT INTO mnn(name) VALUES(?)", (mnn,))
-        self.cur.execute("INSERT INTO items{}(name, unit, mnn_name) VALUES(?,?,?)".format(self.id), (item_name, unit, mnn,))
+        self.cur.execute("INSERT INTO items{}(name, unit, mnn_name) VALUES(?,?,?)"
+                         .format(self.id), (item_name, unit, mnn,))
         self.conn.commit()
         return self.cur.lastrowid
 
@@ -104,13 +106,13 @@ class DataBase:
 
     def show_package(self):  # возвращаем Упаковки
         try:
-            return self.cur.execute('''SELECT name FROM units''').fetchmany(10000)
+            return self.cur.execute('''SELECT name FROM units''').fetchall()
         except:
             return []
 
     def show_division(self):  # возвращаем отделения
         try:
-            return self.cur.execute('''SELECT name FROM division''').fetchmany(10000)
+            return self.cur.execute('''SELECT name FROM division''').fetchall()
         except:
             return []
 
@@ -124,19 +126,25 @@ class DataBase:
 
     def show_data(self):  # возвращаем 10000  записей товара
         try:
-            return self.cur.execute('''SELECT id, name, unit, mnn_name FROM items{} ORDER BY id ASC'''.format(self.id)).fetchmany(10000)
+            return self.cur.execute('''SELECT id, name, unit, mnn_name FROM items{} ORDER BY id ASC'''
+                                    .format(self.id)).fetchall()
         except:
             return []
 
     def show_data_order_by_name(self):  # возвращаем 10000  записей товара в алфавитном порядке
         try:
-            return self.cur.execute('''SELECT id, name, unit, mnn_name FROM items{} ORDER BY name ASC'''.format(self.id)).fetchmany(10000)
+            return self.cur.execute('''SELECT id, name, unit, mnn_name FROM items{} ORDER BY name ASC'''
+                                    .format(self.id)).fetchall()
         except:
             return []
 
 
     def delete_quantity(self, quant_id):  # удаляем проиход/расход
         self.cur.execute("DELETE from quantity{} where id = {}".format(self.id, quant_id))
+        self.conn.commit()
+
+    def delete_all_quantity_item(self, item_id):
+        self.cur.execute("DELETE from quantity{} where item_id = {}".format(self.id, item_id))
         self.conn.commit()
 
     def delete_item(self, item_id):  # удаляем товар
@@ -146,7 +154,8 @@ class DataBase:
 
     def calculate_items(self, item_id):  # возвращаем остаток товара
         return \
-            self.cur.execute('''SELECT sum(quantity) FROM quantity{} WHERE item_id = {}'''.format(self.id, item_id)).fetchone()[0]
+            self.cur.execute('''SELECT sum(quantity) FROM quantity{} WHERE item_id = {}'''
+                             .format(self.id, item_id)).fetchone()[0]
 
 
     def import_from_xls(self, file_name, date_today):  # импортируем из экселя
@@ -177,13 +186,20 @@ class DataBase:
     def select_quant_by_date(self, from_date, to_date):  # возвращаем проиход/расход товара за период времени
         return self.cur.execute(
             '''SELECT * FROM quantity{} LEFT JOIN items{} ON quantity{}.item_id = items{}.id
-                                    WHERE date_of_insert BETWEEN "{}" AND "{}"'''.format(self.id, self.id, self.id, self.id, from_date, to_date)).fetchmany(10000)
+                                    WHERE date_of_insert BETWEEN "{}" AND "{}"'''
+            .format(self.id, self.id, self.id, self.id, from_date, to_date)).fetchall()
 
     def show_quantyty_by_id_date(self, id_item, from_date, to_date):
         return self.cur.execute(
             '''SELECT * FROM quantity{} 
                 WHERE date_of_insert BETWEEN "{}" AND "{}"
-                AND item_id = {}'''.format(self.id, from_date, to_date, id_item)).fetchmany(10000)
+                AND item_id = {}'''.format(self.id, from_date, to_date, id_item)).fetchall()
+
+    def show_quantyty_by_division_date(self, doc, from_date, to_date):
+        return self.cur.execute(
+            '''SELECT item_id, name, unit, quantity FROM quantity{} LEFT JOIN items{} ON quantity{}.item_id = items{}.id
+                WHERE  date_of_insert BETWEEN "{}" AND "{}"
+                AND doc = "{}"'''.format(self.id, self.id, self.id, self.id, from_date, to_date,  doc)).fetchall()
 
     def return_residue(self):  # считает остатки по всем позициям
         all_residue = []
@@ -199,7 +215,8 @@ class DataBase:
     def get_id_from_items(self, item_name):
         return self.cur.execute(
             '''SELECT id FROM items{} 
-                        WHERE name = "{}"'''.format(self.id, item_name)).fetchone()
+                        WHERE name = ? '''.format(self.id), (item_name,)).fetchone()
+
 
 
 # t = DataBase()

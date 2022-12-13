@@ -18,7 +18,72 @@ from UI_files.group_select import Ui_Form
 from UI_files.Change_item import Ui_AddItemDialog
 from UI_files.oper_dialog import Ui_OperationDialog
 from UI_files.residue_dialog import Ui_DialogResidue
+from UI_files.DivisionOperationsDialog import Ui_DialogDivisionOperations
 import os
+
+class OperationsDivisionDialog(QDialog):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ui = Ui_DialogDivisionOperations()
+        self.ui.setupUi(self)
+        self.ui.dateEdit_2.setDate(QDate.currentDate().addDays(-31))
+        self.ui.dateEdit_3.setDate(QDate.currentDate())
+        self.ui.dateEdit_2.dateChanged.connect(lambda: self.if_date_changed())
+        self.ui.dateEdit_3.dateChanged.connect(lambda: self.if_date_changed())
+        self.set_comleter()
+
+    def fill_table_operations(self, sums):  # заполняет виджет таблицы группами из бд
+        if not sums:
+            self.ui.tableWidget.setRowCount(0)
+        else:
+            for co, it in enumerate(sums.values()):
+                self.ui.tableWidget.setRowCount(co + 1)
+                self.ui.tableWidget.setItem(co, 0, QTableWidgetItem("{}".format(it[1])))
+                self.ui.tableWidget.setItem(co, 1, QTableWidgetItem("{}".format(it[2])))
+                self.ui.tableWidget.setItem(co, 2, QTableWidgetItem("{}".format(it[0])))
+
+    def if_date_changed(self):
+        try:
+            lst = db.show_quantyty_by_division_date(str(self.chosen_item), self.ui.dateEdit_2.text(),
+                                                    self.ui.dateEdit_3.text())
+            sums = {}
+            for i in lst:
+                if i[0] not in sums.keys():
+                    sums[i[0]] = [0, i[1], i[2]]
+                    sums[i[0]][0] += i[3]
+                else:
+                    sums[i[0]][0] += i[3]
+
+            self.fill_table_operations(sums)
+        except:
+            pass
+
+    def set_comleter(self):
+        self.strList = [i[0] for i in db.show_division()]
+        completer = QCompleter(self.strList, self.ui.lineEdit)
+        completer.setCaseSensitivity(False)
+        completer.setFilterMode(QtCore.Qt.MatchContains)
+        completer.activated.connect(self.onActivated_competer)
+        self.ui.lineEdit.setCompleter(completer)
+
+    def onActivated_competer(self):
+        self.chosen_item = self.ui.lineEdit.text()
+        self.ui.label.setText(self.chosen_item)
+        QTimer.singleShot(0, self.ui.lineEdit.clear)  # очищаем изменение текста
+        lst = db.show_quantyty_by_division_date(str(self.chosen_item), self.ui.dateEdit_2.text(),
+                                                self.ui.dateEdit_3.text())
+        sums = {}
+        for i in lst:
+            if i[0] not in sums.keys():
+                sums[i[0]] = [0, i[1], i[2]]
+                sums[i[0]][0] += i[3]
+            else:
+                sums[i[0]][0] += i[3]
+
+        self.fill_table_operations(sums)
+
+
+
 
 class InputOperationDialogItem(QDialog):  # класс диалога с созданием новой операции
     def __init__(self, **kwargs):  # def __init__(self, parent=None):
@@ -92,7 +157,7 @@ class InputDialogItem(QDialog):  # класс диалога с создание
         self.ui.buttonBox.accepted.connect(self.accept_clicked)
 
     def accept_clicked(self): # Скрипт при добавлении нового товара
-        db.add_items(self.ui.lineEdit.text(), self.ui.lineEdit_2.text(), self.ui.lineEdit_3.text())
+        db.add_items(str(self.ui.lineEdit.text()), self.ui.lineEdit_2.text(), self.ui.lineEdit_3.text())
         ex.completer_items()
         self.compl_iniit()
         ex.chosen_item = self.ui.lineEdit.text()
@@ -133,8 +198,44 @@ class ResidueDialog(QDialog):  # класс диалога с остатками
         self.ui.pushButton_2.clicked.connect(self.on_add_clicked_odf)
         self.ui.buttonBox.rejected.connect(self.on_cancell_clicked)
         self.ui.checkBox.stateChanged.connect(self.fill_residue_table)
+        self.ui.pushButton_3.clicked.connect(self.delete_item)
         # self.ui.tableWidget.setColumnHidden(0, True)  # Скрывает поле id из таблицы
 
+    def critical_warning(self):  # Предупреждение об удалении
+        qm = QMessageBox()
+        ret = qm.critical(self, 'Предупреждение', "Данное действие товар и все записи с ним связанные",
+                          qm.Ok | qm.Cancel)
+
+        if ret == qm.Ok:
+            return True
+        else:
+            return False
+
+    def delete_item(self):
+        id = db.get_id_from_items(self.ui.tableWidget.item(self.ui.tableWidget.currentRow(), 0).text())[0]
+
+        check = self.critical_warning()
+        try:
+            if check == True:
+                db.delete_item(id)
+                self.fill_residue_table()
+                ex.completer_items()
+                ex.ui.label_2.setText('')
+                ex.ui.label_3.setText('')  # вставляет еденицу измерения товара
+                ex.ui.label_5.setText('')
+                # ex.ui.
+                ex.ui.pushButton.setEnabled(False)
+                ex.ui.pushButton_2.setEnabled(True)
+                ex.ui.pushButton_3.setEnabled(False)
+                ex.fill_table_operations(lst=[])
+            else:
+                return
+        except:
+            pass
+
+
+        db.delete_item(id)
+        self.fill_residue_table()
     def on_add_clicked(self): # импорт в word
         if self.ui.checkBox.checkState() == 0:
             lst = list(filter(lambda x: x[3] != '0.0' and x[3] != 'None', db.return_residue()))
@@ -284,6 +385,7 @@ class mywindow(QtWidgets.QMainWindow):
             file.addAction("Открыть группы")
             file.addAction("Импортировать товары из .xlsx файла")
             file.addAction("Импортировать товары из .ods файла")
+            file.addAction("Открыть расход по отделениям")
 
             # open_groups = QAction("Open groups", self)
 
@@ -339,6 +441,9 @@ class mywindow(QtWidgets.QMainWindow):
                 ex.completer_items()
             except:
                 pass
+
+        elif press.text() == "Открыть расход по отделениям":
+            dod.show()
 
     def completer_items(self):
         self.strList = [i[1] for i in db.show_data()]  # Создаём список слов
@@ -400,6 +505,7 @@ iodi = InputOperationDialogItem()
 rd = ResidueDialog()
 import_word = Word_export()
 import_odt = OdtImport()
+dod = OperationsDivisionDialog()
 
 ex.show()
 sgd.show()
