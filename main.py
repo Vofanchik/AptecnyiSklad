@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
+import os, sys
+sys.path.append(os.getcwd()+'/venv/lib/python3.5/site-packages')
+
+print(sys.path)
 import sys
 from datetime import date
-
-from pprint import pprint
 
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QTimer, QDate
 from PyQt5.QtWidgets import QApplication, QHBoxLayout, QAction, QDialog, QTableWidgetItem, QInputDialog, QMessageBox, \
-    QFileDialog, QCompleter
+    QFileDialog, QCompleter, QWidget, QTableWidget, QPushButton
 
 from ODF_import_expor import OdtImport, OdsExport
 from  XlsxImport import Word_export
@@ -19,7 +21,8 @@ from UI_files.Change_item import Ui_AddItemDialog
 from UI_files.oper_dialog import Ui_OperationDialog
 from UI_files.residue_dialog import Ui_DialogResidue
 from UI_files.DivisionOperationsDialog import Ui_DialogDivisionOperations
-import os
+
+
 
 class OperationsDivisionDialog(QDialog):
     def __init__(self, *args, **kwargs):
@@ -81,9 +84,6 @@ class OperationsDivisionDialog(QDialog):
                 sums[i[0]][0] += i[3]
 
         self.fill_table_operations(sums)
-
-
-
 
 class InputOperationDialogItem(QDialog):  # класс диалога с созданием новой операции
     def __init__(self, **kwargs):  # def __init__(self, parent=None):
@@ -210,6 +210,8 @@ class ResidueDialog(QDialog):  # класс диалога с остатками
             return True
         else:
             return False
+
+
 
     def delete_item(self):
         id = db.get_id_from_items(self.ui.tableWidget.item(self.ui.tableWidget.currentRow(), 0).text())[0]
@@ -386,6 +388,7 @@ class mywindow(QtWidgets.QMainWindow):
             file.addAction("Импортировать товары из .xlsx файла")
             file.addAction("Импортировать товары из .ods файла")
             file.addAction("Открыть расход по отделениям")
+            file.addAction("Редактировать получателей")
 
             # open_groups = QAction("Open groups", self)
 
@@ -421,9 +424,11 @@ class mywindow(QtWidgets.QMainWindow):
         except:
             pass
 
+
+
     def menu_bar_triggered(self, press):
         if press.text() == "Открыть группы":
-            sgd.exec()
+            sgd.exec_()
         elif press.text() == "Импортировать товары из .xlsx файла":
             fname = QFileDialog.getOpenFileName(self, 'Open file',
                                                 '', "Xlsx files (*.xls *.xlsx)")
@@ -444,6 +449,41 @@ class mywindow(QtWidgets.QMainWindow):
 
         elif press.text() == "Открыть расход по отделениям":
             dod.show()
+
+        elif press.text() == "Редактировать получателей":
+            del_recivier = QDialog()
+            del_recivier.setWindowTitle('Редактировать получателей')
+
+            del_button = QPushButton()
+            del_button.setText("Удалить")
+
+            recivier_layout = QtWidgets.QVBoxLayout()
+            recivier_table = QTableWidget()
+            recivier_table.setColumnCount(2)
+            recivier_table.horizontalHeader().setStretchLastSection(True)
+
+            for co, it in enumerate(db.show_division_and_id()):
+                recivier_table.setRowCount(co + 1)
+
+                recivier_table.setItem(co, 0, QTableWidgetItem(str(it[0])))
+                recivier_table.setItem(co, 1, QTableWidgetItem(it[1]))
+
+
+            recivier_table.setHorizontalHeaderLabels(['id',"Получатели"])
+            # recivier_table.setColumnHidden(0, True)
+            recivier_table.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
+
+            del_recivier.setLayout(recivier_layout)
+            recivier_layout.addWidget(recivier_table)
+            recivier_layout.addWidget(del_button)
+
+            del_button.clicked.connect(lambda : db.delete_division(recivier_table.item(recivier_table.currentRow(), 0).
+                                                                   text()))
+
+            if del_recivier.exec_():
+                pass
+
+
 
     def completer_items(self):
         self.strList = [i[1] for i in db.show_data()]  # Создаём список слов

@@ -117,6 +117,13 @@ class DataBase:
             return []
 
 
+    def show_division_and_id(self):  # возвращаем отделения
+        try:
+            return self.cur.execute('''SELECT * FROM division''').fetchall()
+        except:
+            return []
+
+
     def show_mnn(self):  # возвращаем мнн
         try:
             return self.cur.execute('''SELECT name FROM mnn''').fetchmany(1000000)
@@ -150,6 +157,10 @@ class DataBase:
     def delete_item(self, item_id):  # удаляем товар
         self.cur.execute("DELETE from items{} where id = {}".format(self.id, item_id))
         self.cur.execute("DELETE from quantity{} where item_id = {}".format(self.id, item_id))
+        self.conn.commit()
+
+    def delete_division(self, item_id):  # удаляем товар
+        self.cur.execute("DELETE from division where id = {}".format(item_id))
         self.conn.commit()
 
     def calculate_items(self, item_id):  # возвращаем остаток товара
@@ -220,6 +231,7 @@ class DataBase:
 
 
 # t = DataBase()
+# print(t.show_division_and_id())
 # t.delete_group(6)
 # t.id = 2
 # pprint(t.return_residue())
