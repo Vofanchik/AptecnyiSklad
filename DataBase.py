@@ -200,6 +200,16 @@ class DataBase:
                                     WHERE date_of_insert BETWEEN "{}" AND "{}"'''
             .format(self.id, self.id, self.id, self.id, from_date, to_date)).fetchall()
 
+    def select_quant_by_date_name(self, name, from_date, to_date):  # возвращаем проиход/расход товара за период времени
+        return self.cur.execute(
+            '''SELECT sum(case when quantity <=0 then quantity else 0 end),
+                                    sum(case when quantity >=0 then quantity else 0 end)
+                                    FROM quantity{} LEFT JOIN items{} ON quantity{}.item_id = items{}.id
+                                    WHERE date_of_insert BETWEEN "{}" AND "{}"
+                                    AND name = "{}"'''
+            .format(self.id, self.id, self.id, self.id, from_date, to_date, name)).fetchall()
+
+
     def show_quantyty_by_id_date(self, id_item, from_date, to_date):
         return self.cur.execute(
             '''SELECT * FROM quantity{} 

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import datetime
 import os, sys
 sys.path.append(os.getcwd()+'/venv/lib/python3.5/site-packages')
 
@@ -199,6 +200,7 @@ class ResidueDialog(QDialog):  # класс диалога с остатками
         self.ui.buttonBox.rejected.connect(self.on_cancell_clicked)
         self.ui.checkBox.stateChanged.connect(self.fill_residue_table)
         self.ui.pushButton_3.clicked.connect(self.delete_item)
+        self.ui.pushButton_4.clicked.connect(self.IO_items)
         # self.ui.tableWidget.setColumnHidden(0, True)  # Скрывает поле id из таблицы
 
     def critical_warning(self):  # Предупреждение об удалении
@@ -210,6 +212,40 @@ class ResidueDialog(QDialog):  # класс диалога с остатками
             return True
         else:
             return False
+
+    def IO_items(self):
+        item_name = self.ui.tableWidget.item(self.ui.tableWidget.currentRow(), 0).text()
+        IO = QDialog()
+        IO.setMinimumWidth(300)
+        IO_layout = QtWidgets.QGridLayout()
+        IO.setWindowTitle("Остатки за период")
+        IO.setLayout(IO_layout)
+        from_date_area_label = QtWidgets.QLabel("С")
+        from_date_area = QtWidgets.QDateEdit()
+        to_date_area_label = QtWidgets.QLabel("По")
+        to_date_area = QtWidgets.QDateEdit()
+        name = QtWidgets.QLabel(item_name)
+        in_count = QtWidgets.QLabel()
+        in_label = QtWidgets.QLabel("Приход")
+        out_count = QtWidgets.QLabel()
+        out_label = QtWidgets.QLabel("Расход")
+        widgets = [name,from_date_area_label, from_date_area,to_date_area_label, to_date_area,in_label,
+                   in_count,out_label,out_count]
+
+        date_widgets = [from_date_area, to_date_area]
+        [[i.setDate(datetime.datetime.now()), i.setCalendarPopup(True), i.setDisplayFormat("yyyy-MM-dd"),
+          i.dateChanged.connect(lambda : [in_count.setText(str
+                                                           (db.select_quant_by_date_name
+                                                            (item_name, from_date_area.text(),
+                                                             to_date_area.text())[0][1])),
+        out_count.setText(str(db.select_quant_by_date_name(item_name, from_date_area.text(),
+                                                           to_date_area.text())[0][0]))])] for i in date_widgets]
+        from_date_area.setDate(QDate.currentDate().addDays(-31))
+
+        for c, w in enumerate(widgets):
+            IO_layout.addWidget(w)
+
+        IO.exec_()
 
 
 
@@ -477,7 +513,7 @@ class mywindow(QtWidgets.QMainWindow):
             recivier_layout.addWidget(recivier_table)
             recivier_layout.addWidget(del_button)
 
-            del_button.clicked.connect(lambda : db.delete_division(recivier_table.item(recivier_table.currentRow(), 0).
+            del_button.clicked.connect(lambda: db.delete_division(recivier_table.item(recivier_table.currentRow(), 0).
                                                                    text()))
 
             if del_recivier.exec_():
